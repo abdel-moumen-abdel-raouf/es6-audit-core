@@ -1,5 +1,9 @@
 # AuditCore — Enterprise-Grade ES6 Logging & Audit System
 
+![Build](https://github.com/abdel-moumen-abdel-raouf/es6-audit-core/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-c8-green)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
+
 A high-performance, security-conscious logging and audit core for modern Node.js applications. Built as native ES Modules with production features including adaptive buffering with backpressure, rate limiting, sanitization/redaction, resilient transport chains, dynamic configuration, health checks, metrics, and distributed tracing.
 
 Current version: 1.0.0
