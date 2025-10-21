@@ -15,61 +15,61 @@ Applied all prioritized fixes from PROJECT_WEAKNESSES_REPORT.md, focusing on asy
 - Changes: Enabled masking for emails, IPs, and phones by default. Ensured `LogEntry` uses secure sanitizer defaults.
 - Outcome: Sensitive PII patterns are redacted by default.
 
-2. Reduce console leakage (Report 3.2)
+1. Reduce console leakage (Report 3.2)
 
 - Files: `core/core-logger.js`
 - Changes: Tightened console error messages to avoid printing full objects; kept concise messages.
 - Outcome: Lower risk of leaking sensitive data in internal errors.
 
-3. Async buffer correctness (Report 3.3, 3.13)
+1. Async buffer correctness (Report 3.3, 3.13)
 
 - Files: `core/core-logger.js`, `transports/console-transport.js`, `transports/file-transport.js`, `transports/http-transport.js`
 - Changes: Made `CoreLogger.log` async and awaited `buffer.push`. `_handleFlush` is now async and awaits transport writes. Added `write(entries)` for transports or fallback to per-entry `log`.
 - Outcome: Correct backpressure handling; reliable flush with proper error catching.
 
-4. Transport interface mismatch (Report 3.5)
+1. Transport interface mismatch (Report 3.5)
 
 - Files: `core/core-logger.js`, `transports/console-transport.js`, `transports/file-transport.js`, `transports/http-transport.js`
 - Changes: Implemented batch-capable `write(entries)` in transports and added fallback in `CoreLogger` to iterate entries via `log`.
 - Outcome: Batches are handled safely; legacy transports remain compatible.
 
-5. Re-export and naming fixes (Report 3.6)
+1. Re-export and naming fixes (Report 3.6)
 
 - Files: `transports/index.js`, `index.js`
 - Changes: Exported `AdvancedHttpTransport as HttpTransport`, re-exposed default `LogBuffer`, standardized `PayloadOptimizer` naming.
 - Outcome: Import paths align with actual implementations and work as documented.
 
-6. Incomplete CJS interop (Report 3.7)
+1. Incomplete CJS interop (Report 3.7)
 
 - Files: `package.json`, `index.cjs`
 - Changes: Added `"require": "./index.cjs"` to exports for CommonJS consumers. Documented interop in `index.cjs` (already present).
 - Outcome: `require(...)` resolves to CJS shim; ESM remains default.
 
-7. Example/doc divergence (Report 3.8)
+1. Example/doc divergence (Report 3.8)
 
 - Files: `utils/example-logger-usage.js`
 - Changes: Updated sample to reflect `CoreLogger` API; removed non-existent methods and made logging calls async.
 - Outcome: Examples are consistent with the implemented API.
 
-8. LoggingError misuse (Report 3.9)
+1. LoggingError misuse (Report 3.9)
 
 - Files: `error-handling/errors.js`
 - Changes: Made constructor flexible to support `(message)` or `(code, message, context)`.
 - Outcome: Existing call sites remain valid; error metadata preserved.
 
-9. File transport throughput (Report 3.4)
+1. File transport throughput (Report 3.4)
 
 - Files: `transports/file-transport.js`
 - Changes: Switched to persistent write streams with backpressure awareness and grouped writes.
 - Outcome: Improved throughput and lower syscall overhead under load.
 
-10. Metrics histogram memory (Report 3.14)
+1. Metrics histogram memory (Report 3.14)
 
 - Files: `metrics/metrics-collector.js`
 - Changes: Added `maxHistogramValues` (default 2048) and pruning logic.
 - Outcome: Bounded memory usage for histograms.
 
-11. jsconfig include pattern (Report 3.15)
+1. jsconfig include pattern (Report 3.15)
 
 - Files: `jsconfig.json`
 - Changes: Fixed include glob and trailing comma.
@@ -95,4 +95,4 @@ Applied all prioritized fixes from PROJECT_WEAKNESSES_REPORT.md, focusing on asy
 - Remote push not completed: no Git remote configured (git push failed with "origin not found"). The branch exists locally.
 - To push: add your GitHub remote and run `git push --set-upstream origin fix/all-issues-2025-10-20`.
 
-**_ End of Report _**
+## End of report
