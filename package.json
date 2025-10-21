@@ -23,9 +23,10 @@
     "test": "node ./tests/run-all-tests.js",
     "test:basic": "node ./tests/basic.test.js",
     "test:core": "node ./tests/core.test.js",
-    "lint": "eslint .",
-  "lint:md": "npx markdownlint-cli2 \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
-  "lint:md:fix": "npx markdownlint-cli2-fix \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
+    "lint": "eslint index.js core/**/*.js config/**/*.js context/**/*.js error-handling/**/*.js rate-limiting/**/*.js sanitizer/**/*.js sync/**/*.js transports/**/*.js utils/**/*.js tests/**/*.js scripts/**/*.js eslint.config.js",
+    "lint:ci": "npm run lint --silent -- --max-warnings=0",
+    "lint:md": "npx markdownlint-cli2 \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
+    "lint:md:fix": "npx markdownlint-cli2-fix \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
     "format": "prettier --write .",
     "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/run-all-tests.js"
   },

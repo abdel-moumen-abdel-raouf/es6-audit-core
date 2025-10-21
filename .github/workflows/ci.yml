@@ -20,21 +20,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: ESLint warnings report (non-blocking)
-        if: always()
-        run: |
-          echo "Collecting ESLint warnings (non-blocking)" 
-          npm run lint --silent | tee lint-output.txt || true
-          echo "--- ESLint output collected ---"
-      - name: Upload ESLint report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: eslint-node-${{ matrix.node }}
-          path: lint-output.txt
+      - name: Lint (fail on warnings)
+        run: npm run lint:ci
       - name: Verify API Consistency
         run: node ./scripts/check-api-consistency.js
       - name: Run tests
