@@ -459,6 +459,18 @@ Run tests and coverage:
 - For public APIs, update this README and add inline JSDoc
 - Submit pull requests with a clear description and reproduction steps when fixing bugs
 
+## CommonJS Compatibility
+
+This package is **ESM-only** and requires **Node.js 18+**.
+The previous CommonJS compatibility shim (`index.cjs`) has been removed.
+If you need to use this library from a CommonJS project, load it via:
+
+```js
+(async () => {
+  const mod = await import('@svg-character-engine/audit-core');
+})();
+```
+
 ## License
 
 MIT License. See the `LICENSE` file for details.
