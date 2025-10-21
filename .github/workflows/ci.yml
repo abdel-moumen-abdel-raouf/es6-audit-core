@@ -2,9 +2,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: ["fix/*", "main", "master"]
+    branches: ['fix/*', 'main', 'master']
   pull_request:
-    branches: ["main", "master"]
+    branches: ['main', 'master']
 
 jobs:
   build-and-test:
@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "${{ matrix.node }}"
-          cache: "npm"
+          node-version: '${{ matrix.node }}'
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Lint
@@ -26,6 +26,12 @@ jobs:
         run: npm test --silent
       - name: Coverage
         run: npm run coverage --if-present
+      - name: Upload lcov report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov-node-${{ matrix.node }}
+          path: coverage
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
