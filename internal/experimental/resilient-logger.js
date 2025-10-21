@@ -1,4 +1,9 @@
 /**
+ * @internal
+ * This module is for internal/experimental use only and is not part of the public API.
+ * It may change or be removed without notice.
+ */
+/**
  * Resilient Logger Fixed - Cascading Failures Prevention
  *
  * Solves Critical Issue #4: Cascading Failures

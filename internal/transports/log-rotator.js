@@ -1,4 +1,9 @@
 /**
+ * @internal
+ * This module is for internal/experimental use only and is not part of the public API.
+ * It may change or be removed without notice.
+ */
+/**
  * Log Rotation System
  *
  * Handles automatic log file rotation based on size and date

@@ -1,4 +1,9 @@
 /**
+ * @internal
+ * This module is for internal/experimental use only and is not part of the public API.
+ * It may change or be removed without notice.
+ */
+/**
  * Adaptive Logger Fixed - Memory Pressure Management
  *
  * Solves Critical Issue #5: Memory Pressure at High Volume

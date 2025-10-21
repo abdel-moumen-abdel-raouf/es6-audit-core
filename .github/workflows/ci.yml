@@ -22,6 +22,8 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint --if-present
+      - name: Verify API Consistency
+        run: node ./scripts/check-api-consistency.js
       - name: Run tests
         run: npm test --silent
       - name: Coverage

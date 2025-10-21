@@ -29,7 +29,6 @@ export { RateLimiter } from './rate-limiting/rate-limiter.js';
 
 // Errors
 export { LoggingError } from './error-handling/errors.js';
-export { ContextualLogEntry } from './error-handling/contextual-log-entry.js';
 
 // Sanitization
 export { DataSanitizer } from './sanitizer/data-sanitizer.js';
