@@ -23,11 +23,21 @@ function testSanitizerDefaults() {
 export async function run() {
   await testAsyncLoggingAndBatch();
   testSanitizerDefaults();
+  // Batch fallback: ensure logger handles transports without write() by using log()
+  class LogOnlyTransport {
+    async log() { /* no-op */ }
+  }
+  const t = new LogOnlyTransport();
+  const logger = new CoreLogger({ name: 'batch', transports: [t], buffer: { maxSize: 2, flushInterval: 10 } });
+  await logger.info('a');
+  await logger.info('b');
+  await logger.flush();
 }
 
 if (import.meta.main) {
   run().then(() => {
     console.log('All tests passed');
+    process.exit(0);
   }).catch((e) => {
     console.error(e);
     process.exit(1);

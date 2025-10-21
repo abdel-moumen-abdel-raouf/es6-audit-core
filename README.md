@@ -171,36 +171,36 @@ CommonJS usage:
 
 ## Quick Start Guide
 
-Note on transports: CoreLogger flushes a batch of entries. Provide transports that accept batched writes via a `write(entries)` method. If you want to reuse the provided `ConsoleTransport` (which defines `log(entry)`), wrap it with a tiny adapter:
+Important async note:
+
+- `logger.log/debug/info/warn/error` are async and resolve to a boolean. Prefer `await` to handle backpressure outcomes properly.
+- `flush()` and `drain()` are async and should be awaited before shutdown.
+
+
+Transports and batching: CoreLogger flushes a batch of entries. Built-in `ConsoleTransport` and `HttpTransport` already provide `write(entries)` for batched delivery. If you use a custom transport that only implements per-entry `log(entry)`, either add a `write(entries)` method or wrap it in a small adapter.
 
 ```js
 import { CoreLogger, LogLevel, ConsoleTransport } from '@svg-character-engine/audit-core';
 
-class ConsoleBatchAdapter {
-  constructor() {
-    this.console = new ConsoleTransport();
-  }
-  async write(entries) {
-    for (const e of entries) {
-      await this.console.log(e); // console transport logs single entry
-    }
-  }
-}
-
 const logger = new CoreLogger({
   name: 'app',
-  transports: [new ConsoleBatchAdapter()],
+  transports: [new ConsoleTransport()],
   buffer: {
     maxSize: 1000,
     flushInterval: 1000,
     highWaterMark: 0.8,
     lowWaterMark: 0.5
   },
-  rateLimiter: { tokensPerSecond: 1000, burstCapacity: 2000 }
+  rateLimiter: { tokensPerSecond: 1000, burstCapacity: 2000 },
+  // Optional unified error hook for internal logging errors
+  onError: (err) => {
+    // You can forward to your monitoring here
+    // console.warn('Logger internal error:', err);
+  }
 });
 
-logger.info('Application started', { env: process.env.NODE_ENV });
-logger.debug('Debug details will be buffered/sanitized');
+await logger.info('Application started', { env: process.env.NODE_ENV });
+await logger.debug('Debug details will be buffered/sanitized');
 await logger.drain(); // optional: wait for backpressure to clear (e.g., before shutdown)
 ```
 
@@ -252,10 +252,10 @@ node .\quick-start.mjs
   - `RequestContextFactory.fromExpressRequest(req)` and similar factories
 
 - Transports:
-  - `ConsoleTransport` — single-entry `log(entry)`
+  - `ConsoleTransport` — supports single-entry `log(entry)` and batch `write(entries)`
   - `FileTransport` — Node-only; directory required; batched write queue
-  - `HttpTransport` — advanced HTTP transport (alias of `AdvancedHttpTransport`) with retry/backoff and DLQ
-  - For CoreLogger batching, wrap these into adapters that expose `write(entries)`
+  - `HttpTransport` — advanced HTTP transport (alias of `AdvancedHttpTransport`) with retry/backoff and DLQ; supports `log(entry)` and `write(entries)`
+  - For custom transports that lack `write(entries)`, add it or wrap them with a simple adapter
 
 
 ## Usage Examples
@@ -361,12 +361,12 @@ Note: Health and Metrics are present in the repository but are not exported via 
 This library is primarily a set of ES classes. Highlights only:
 
 - `CoreLogger` (core/core-logger.js)
-  - `new CoreLogger({ name, buffer, rateLimiter, transports, enableTransformLogging, transformContext })`
-  - `log(level, message, metadata?)`, `debug/info/warn/error(message, metadata?)`
+  - `new CoreLogger({ name, buffer, rateLimiter, transports, onError, enableTransformLogging, transformContext })`
+  - `log(level, message, metadata?)`, `debug/info/warn/error(message, metadata?)` — all async, resolve to `boolean`
   - `logWithContext(level, objectId, message, additionalData?)`, `debugWithContext/infoWithContext/warnWithContext/errorWithContext`
   - Transform/context management: `registerObject`, `updateTransform`, `setObjectParent`, `getTransform`, `getHierarchyInfo`
   - State mgmt: `setObjectState`, `getObjectState`, `snapshotContext`, `restoreFromSnapshot`, `cleanupOldSnapshots`, `clearAll`
-  - Transports/flow: `addTransport`, `removeTransport`, `flush`, `drain`
+  - Transports/flow: `addTransport`, `removeTransport`, `flush()`, `drain()` — both async
   - Observability: `getStatistics`, `getReport`, `resetStats`, `destroy`
 
 - `AdaptiveLogBuffer` (transports/adaptive-log-buffer.js)
@@ -402,9 +402,10 @@ This library is primarily a set of ES classes. Highlights only:
 - `HealthCheckManager` (health/health-check-manager.js) — internal module
 
 
-## Testing & Development
+Testing & Development
 
-- Tests: a `tests/` directory exists; no test runners or scripts are defined in `package.json`.
+- Tests: see `tests/basic.test.js`. Run them with `npm test` (package.json defines the script).
+- CI: GitHub Actions workflow is included at `.github/workflows/ci.yml` to run tests on push/PR.
 - Build: source is plain ES Modules JavaScript; no build step is required for Node.
 - Editor/Tooling: see `jsconfig.json` for ES2020 target and module resolution.
 - Local verification:
@@ -448,9 +449,11 @@ No license is declared in the repository. Before using this software in producti
 ## Contact & Support
 
 For issues and feature requests, please open a GitHub issue in this repository. Include:
+
 - Node.js version and environment
 - Minimal reproduction (code snippets)
 - Logs or error messages (sanitized)
+
 
 
 ## Changelog / Version Info
@@ -458,5 +461,6 @@ For issues and feature requests, please open a GitHub issue in this repository. 
 - 1.0.0 — Initial public version (as per `package.json`)
 
 Notes:
+
 - ESM-first design documented in `index.cjs` (CommonJS consumers should use dynamic import).
 - Public exports are defined in `index.js` and `package.json#exports`.

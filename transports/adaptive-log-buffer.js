@@ -60,7 +60,7 @@ export class AdaptiveLogBuffer {
           return false;
         } else {
           // Force flush oldest entries (garbage collection)
-          this._forceFlush(Math.floor(this.maxSize * 0.25)); // Flush 25%
+          await this._forceFlush(Math.floor(this.maxSize * 0.25)); // Flush 25%
         }
       }
 
@@ -143,7 +143,7 @@ export class AdaptiveLogBuffer {
   /**
  * 
  */
-  _forceFlush(count) {
+  async _forceFlush(count) {
     const entries = this.buffer.splice(0, count);
     
     
@@ -152,7 +152,7 @@ export class AdaptiveLogBuffer {
     }
 
     
-    this._notifyListeners(entries);
+  await this._notifyListeners(entries);
     this.stats.totalFlushed += entries.length;
     
     
@@ -193,7 +193,7 @@ export class AdaptiveLogBuffer {
       this.buffer = [];
       this.memoryUsage = 0;
       
-      this._notifyListeners(entries);
+  await this._notifyListeners(entries);
       this.stats.totalFlushed += entries.length;
 
       
@@ -235,13 +235,21 @@ export class AdaptiveLogBuffer {
   /**
  * 
  */
-  _notifyListeners(entries) {
+  async _notifyListeners(entries) {
+    const promises = [];
     for (const listener of this.listeners) {
       try {
-        listener(entries);
+        const res = listener(entries);
+        if (res && typeof res.then === 'function') {
+          promises.push(res);
+        }
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error('Error in flush listener:', e);
       }
+    }
+    if (promises.length > 0) {
+      await Promise.allSettled(promises);
     }
   }
 

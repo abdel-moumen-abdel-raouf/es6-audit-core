@@ -136,9 +136,12 @@ export class CoreLogger {
       rateLimited: 0       // Log entries rejected due to rate limiting
     };
 
-    // Setup flush handler for transports
-    this.buffer.onFlush((entries) => {
-      this._handleFlush(entries);
+    // Pluggable error hook
+    this.onError = typeof config.onError === 'function' ? config.onError : null;
+
+    // Setup flush handler for transports (awaited by buffer)
+    this.buffer.onFlush(async (entries) => {
+      await this._handleFlush(entries);
     });
 
     // Periodic cleanup of expired rate limit entries (every 5 seconds)
@@ -269,7 +272,8 @@ export class CoreLogger {
       return true;
     } catch (error) {
       this.stats.errors++;
-      // Avoid leaking sensitive context; keep concise message
+      // Pluggable hook + concise console fallback
+      try { this.onError && this.onError(error); } catch {}
       // eslint-disable-next-line no-console
       console.error(`[${this.name}] Error logging: ${error?.message || error}`);
       return false;
@@ -286,7 +290,7 @@ export class CoreLogger {
    * @param {Object} [metadata] - Additional metadata
    * @returns {boolean} true if logged successfully, false if rejected
    */
-  debug(message, metadata) {
+  async debug(message, metadata) {
     return this.log(LogLevel.DEBUG, message, metadata);
   }
 
@@ -300,7 +304,7 @@ export class CoreLogger {
    * @param {Object} [metadata] - Additional metadata
    * @returns {boolean} true if logged successfully, false if rejected
    */
-  info(message, metadata) {
+  async info(message, metadata) {
     return this.log(LogLevel.INFO, message, metadata);
   }
 
@@ -314,7 +318,7 @@ export class CoreLogger {
    * @param {Object} [metadata] - Additional metadata
    * @returns {boolean} true if logged successfully, false if rejected
    */
-  warn(message, metadata) {
+  async warn(message, metadata) {
     return this.log(LogLevel.WARN, message, metadata);
   }
 
@@ -328,7 +332,7 @@ export class CoreLogger {
    * @param {Object} [metadata] - Additional metadata (usually includes error object or stack trace)
    * @returns {boolean} true if logged successfully, false if rejected
    */
-  error(message, metadata) {
+  async error(message, metadata) {
     return this.log(LogLevel.ERROR, message, metadata);
   }
 
