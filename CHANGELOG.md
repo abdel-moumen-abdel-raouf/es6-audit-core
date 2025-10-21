@@ -8,6 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ### Added
 
-- Initial public release of `@svg-character-engine/audit-core`
+- Initial public release of `audit-core`
 - CoreLogger with adaptive buffering, rate limiting, sanitization, transports
 - Basic tests and CI workflow

@@ -150,14 +150,14 @@ npm install
 Use as a package (when published or via Git URL/local path):
 
 ```powershell
-# Example when published under @svg-character-engine scope
-npm install @svg-character-engine/audit-core
+# Install
+npm install audit-core
 ```
 
 ESM import (recommended):
 
 ```js
-import { CoreLogger, LogLevel } from '@svg-character-engine/audit-core';
+import { CoreLogger, LogLevel } from 'audit-core';
 ```
 
 CommonJS usage:
@@ -167,7 +167,7 @@ CommonJS usage:
 
 ```js
 (async () => {
-  const { CoreLogger } = await import('@svg-character-engine/audit-core');
+  const { CoreLogger } = await import('audit-core');
   const logger = new CoreLogger({ name: 'app' });
   logger.info('Hello from CJS via dynamic import');
 })();
@@ -183,7 +183,7 @@ Important async note:
 Transports and batching: CoreLogger flushes a batch of entries. Built-in `ConsoleTransport` and `HttpTransport` already provide `write(entries)` for batched delivery. If you use a custom transport that only implements per-entry `log(entry)`, either add a `write(entries)` method or wrap it in a small adapter.
 
 ```js
-import { CoreLogger, LogLevel, ConsoleTransport } from '@svg-character-engine/audit-core';
+import { CoreLogger, LogLevel, ConsoleTransport } from 'audit-core';
 
 const logger = new CoreLogger({
   name: 'app',
@@ -264,7 +264,7 @@ node .\quick-start.mjs
 - File transport (Node-only) with adapter:
 
 ```js
-import { CoreLogger, FileTransport, LogLevel } from '@svg-character-engine/audit-core';
+import { CoreLogger, FileTransport, LogLevel } from 'audit-core';
 
 class FileBatchAdapter {
   constructor(logDirectory) {
@@ -288,7 +288,7 @@ logger.warn('High latency on payment gateway', { provider: 'stripe', latencyMs: 
 - HTTP transport with exponential backoff and dead-letter queue:
 
 ```js
-import { CoreLogger, HttpTransport } from '@svg-character-engine/audit-core';
+import { CoreLogger, HttpTransport } from 'audit-core';
 
 class HttpBatchAdapter {
   constructor(url, options) {
@@ -312,7 +312,7 @@ logger.error('Upstream service returned 503', { service: 'inventory', attempt: 3
 - Context and correlation:
 
 ```js
-import { LogContext } from '@svg-character-engine/audit-core';
+import { LogContext } from 'audit-core';
 
 const correlationId = LogContext.initialize();
 logger.info('Start request', { correlationId });
@@ -325,7 +325,7 @@ LogContext.runWithContext(() => {
 - Dynamic configuration at runtime:
 
 ```js
-import { DynamicConfigIntegration } from '@svg-character-engine/audit-core';
+import { DynamicConfigIntegration } from 'audit-core';
 
 DynamicConfigIntegration.enable({ defaultLogLevel: 'INFO' });
 DynamicConfigIntegration.setModuleLogLevel('api', 'WARN');
@@ -467,7 +467,7 @@ If you need to use this library from a CommonJS project, load it via:
 
 ```js
 (async () => {
-  const mod = await import('@svg-character-engine/audit-core');
+  const mod = await import('audit-core');
 })();
 ```
 
