@@ -12,8 +12,8 @@
  */
 
 import RotatingFileTransport from '../transports/rotating-file-transport.js';
-import LogArchiver from '../transports/log-archiver.js';
-import LogCleanupPolicy from '../transports/log-cleanup-policy.js';
+import LogArchiver from 'internal/transports/log-archiver.js';
+import LogCleanupPolicy from 'internal/transports/log-cleanup-policy.js';
 import LogBuffer from '../transports/log-buffer.js';
 import { LogEntry } from './log-entry.js';
 import path from 'path';

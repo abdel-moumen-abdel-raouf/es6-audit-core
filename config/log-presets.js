@@ -13,13 +13,13 @@ import {
   DefaultFormatter,
   JSONFormatter,
   CompactFormatter,
-} from '../utils/log-formatter.js';
+} from 'internal/utils/log-formatter.js';
 import { ColorConfig, ColorTheme, ANSIColors } from './color-config.js';
 import {
   OutputCustomizer,
   PrefixTransformer,
   FilterTransformer,
-} from '../utils/output-customizer.js';
+} from 'internal/utils/output-customizer.js';
 
 /**
  * Preset Configuration

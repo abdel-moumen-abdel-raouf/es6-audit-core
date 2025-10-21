@@ -12,7 +12,7 @@
  * config.getLogLevelForModule('math-lib'); // => LogLevel.DEBUG
  */
 
-import { ModulePatternMatcher } from '../utils/module-pattern-matcher.js';
+import { ModulePatternMatcher } from 'internal/utils/module-pattern-matcher.js';
 import { LogLevel } from '../utils/types.js';
 import { LoggingError } from '../error-handling/errors.js';
 

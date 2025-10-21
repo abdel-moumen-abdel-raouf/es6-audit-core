@@ -1,4 +1,9 @@
 ﻿/**
+ * @internal
+ * This module is for internal/experimental use only and is not part of the public API.
+ * It may change or be removed without notice.
+ */
+/**
  * ModulePatternMatcher
  *
  * ÙØ¦Ø© Ù„Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ù…Ø·Ø§Ø¨Ù‚Ø© Ø£Ù†Ù…Ø§Ø· Ø£Ø³Ù…Ø§Ø¡ Ø§Ù„ÙˆØ­Ø¯Ø§Øª

@@ -1,4 +1,9 @@
 ﻿/**
+ * @internal
+ * This module is for internal/experimental use only and is not part of the public API.
+ * It may change or be removed without notice.
+ */
+/**
  * Worker Threads Integration - Fix #21
  *
  * Ø§Ù„Ù…Ù…ÙŠØ²Ø§Øª:

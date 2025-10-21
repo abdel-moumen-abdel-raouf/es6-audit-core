@@ -1,4 +1,9 @@
 /**
+ * @internal
+ * This module is for internal/experimental use only and is not part of the public API.
+ * It may change or be removed without notice.
+ */
+/**
  * Contextual Log Entry with Full Error Context
  *
  * Combines standard logging with comprehensive error context:
@@ -8,7 +13,7 @@
  * - System metadata
  */
 
-import { ErrorContext, StackTraceExtractor } from '../utils/stack-trace.js';
+import { ErrorContext, StackTraceExtractor } from 'internal/utils/stack-trace.js';
 import { LogContext } from '../context/log-context.js';
 import { RequestContextStorage } from '../context/request-context.js';
 import { LogEntry } from '../utils/log-entry.js';
