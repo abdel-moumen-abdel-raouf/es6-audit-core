@@ -6,7 +6,7 @@
 
 A high-performance, security-conscious logging and audit core for modern Node.js applications. Built as native ES Modules with production features including adaptive buffering with backpressure, rate limiting, sanitization/redaction, resilient transport chains, dynamic configuration, health checks, metrics, and distributed tracing.
 
-Current version: 1.0.0
+Published version: 1.0.0
 
 ## Overview / Introduction
 
@@ -147,10 +147,9 @@ Install (from a local clone or workspace):
 npm install
 ```
 
-Use as a package (when published or via Git URL/local path):
+Use as a package (npm):
 
 ```powershell
-# Install
 npm install audit-core
 ```
 
@@ -205,6 +204,21 @@ const logger = new CoreLogger({
 await logger.info('Application started', { env: process.env.NODE_ENV });
 await logger.debug('Debug details will be buffered/sanitized');
 await logger.drain(); // optional: wait for backpressure to clear (e.g., before shutdown)
+```
+
+## Example usage
+
+A minimal usage snippet inspired by `utils/example-logger-usage.js`:
+
+```js
+import { CoreLogger } from 'audit-core';
+import { ConsoleTransport } from 'audit-core';
+
+const transport = new ConsoleTransport();
+const logger = new CoreLogger({ name: 'app', transports: [transport] });
+
+await logger.info('Application started');
+await logger.debug('Vector calculation (debug)', { precision: 0.001, algorithm: 'Bresenham' });
 ```
 
 To try locally, save the snippet as `quick-start.mjs` and run:
@@ -485,7 +499,7 @@ For issues and feature requests, please open a GitHub issue in this repository. 
 
 ## Changelog / Version Info
 
-- 1.0.0 — Initial public version (as per `package.json`)
+- 1.0.0 — Stable production release with adaptive buffering, structured logging, and rate limiting.
 
 Notes:
 
