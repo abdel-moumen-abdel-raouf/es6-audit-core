@@ -1,41 +1,55 @@
 {
-  "name": "@svg-character-engine/audit-core",
+  "name": "@al-masry/audit-core",
   "version": "1.0.0",
   "description": "Enterprise-grade audit and logging core - ES6 modules",
   "type": "module",
   "main": "./index.js",
   "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.cjs",
-      "default": "./index.js"
-    },
-    "./internal": {
-      "import": "./internal/index.js",
-      "default": "./internal/index.js"
-    }
+    ".": { "import": "./index.js", "default": "./index.js" }
   },
+  "files": [
+    "index.js",
+    "core/**",
+    "config/**",
+    "context/**",
+    "error-handling/**",
+    "rate-limiting/**",
+    "sanitizer/**",
+    "sync/**",
+    "transports/**",
+    "utils/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "keywords": [
     "logging",
     "enterprise"
   ],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/abdel-moumen-abdel-raouf/es6-audit-core.git" },
+  "bugs": { "url": "https://github.com/abdel-moumen-abdel-raouf/es6-audit-core/issues" },
+  "homepage": "https://github.com/abdel-moumen-abdel-raouf/es6-audit-core#readme",
+  "author": "Abdel Moumen Abdel Raouf",
+  "sideEffects": false,
   "scripts": {
     "test": "node ./tests/run-all-tests.js",
     "test:basic": "node ./tests/basic.test.js",
     "test:core": "node ./tests/core.test.js",
-    "lint": "eslint .",
+    "lint": "eslint index.js core/**/*.js config/**/*.js context/**/*.js error-handling/**/*.js rate-limiting/**/*.js sanitizer/**/*.js sync/**/*.js transports/**/*.js utils/**/*.js tests/**/*.js scripts/**/*.js eslint.config.js",
+    "lint:ci": "npm run lint --silent -- --max-warnings=0",
+    "lint:md": "npx markdownlint-cli2 \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
+    "lint:md:fix": "npx markdownlint-cli2-fix \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
     "format": "prettier --write .",
-    "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/run-all-tests.js"
+    "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/run-all-tests.js",
+    "prepublishOnly": "npm run lint:ci && npm test"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "devDependencies": {
     "eslint": "^9.12.0",
-    "eslint-plugin-security": "^3.0.1",
-    "eslint-plugin-prettier": "^5.1.3",
     "prettier": "^3.3.3",
-    "nyc": "^17.1.0",
     "c8": "^10.1.2"
   }
 }

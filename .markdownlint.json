@@ -1,0 +1,13 @@
+{
+  "default": true,
+  "MD013": false,
+  "MD033": false,
+  "MD041": false,
+  "MD034": true,
+  "MD024": { "siblings_only": false },
+  "MD025": { "front_matter_title": "^.*$" },
+  "MD029": true,
+  "MD031": true,
+  "MD032": true,
+  "MD040": true
+}

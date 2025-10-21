@@ -20,8 +20,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Lint
-        run: npm run lint --if-present
+      - name: Lint (fail on warnings)
+        run: npm run lint:ci
       - name: Verify API Consistency
         run: node ./scripts/check-api-consistency.js
       - name: Run tests
@@ -40,3 +40,18 @@ jobs:
         with:
           name: coverage-node-${{ matrix.node }}
           path: coverage
+
+      - name: Markdown lint (non-blocking)
+        if: always()
+        run: |
+          npx --yes markdownlint-cli2 "**/*.md" "!coverage/**" "!node_modules/**" --config .markdownlint.json | tee md-lint.txt || true
+      - name: Upload markdownlint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: markdownlint-node-${{ matrix.node }}
+          path: md-lint.txt
+
+      - name: Security audit (production)
+        if: github.event_name == 'push'
+        run: npm audit --production --audit-level=high || true

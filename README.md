@@ -1,8 +1,13 @@
 # AuditCore — Enterprise-Grade ES6 Logging & Audit System
 
+![Build](https://github.com/abdel-moumen-abdel-raouf/es6-audit-core/actions/workflows/ci.yml/badge.svg)
+![npm](https://img.shields.io/npm/v/@al-masry/audit-core)
+![Coverage](https://img.shields.io/badge/coverage-c8-green)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
+
 A high-performance, security-conscious logging and audit core for modern Node.js applications. Built as native ES Modules with production features including adaptive buffering with backpressure, rate limiting, sanitization/redaction, resilient transport chains, dynamic configuration, health checks, metrics, and distributed tracing.
 
-Current version: 1.0.0
+Published version: 1.0.0 (scoped as @al-masry/audit-core)
 
 ## Overview / Introduction
 
@@ -129,6 +134,8 @@ Key directories:
 
 ## Installation & Setup
 
+This package is ESM-only and requires Node.js 18+.
+
 Requirements:
 
 - Node.js >= 14
@@ -141,17 +148,18 @@ Install (from a local clone or workspace):
 npm install
 ```
 
-Use as a package (when published or via Git URL/local path):
+Use as a package (npm):
 
 ```powershell
-# Example when published under @svg-character-engine scope
-npm install @svg-character-engine/audit-core
+npm install @al-masry/audit-core
 ```
+
+Note: The package is published under the scoped name `@al-masry/audit-core`.
 
 ESM import (recommended):
 
 ```js
-import { CoreLogger, LogLevel } from '@svg-character-engine/audit-core';
+import { CoreLogger, LogLevel } from '@al-masry/audit-core';
 ```
 
 CommonJS usage:
@@ -161,7 +169,7 @@ CommonJS usage:
 
 ```js
 (async () => {
-  const { CoreLogger } = await import('@svg-character-engine/audit-core');
+  const { CoreLogger } = await import('@al-masry/audit-core');
   const logger = new CoreLogger({ name: 'app' });
   logger.info('Hello from CJS via dynamic import');
 })();
@@ -177,7 +185,7 @@ Important async note:
 Transports and batching: CoreLogger flushes a batch of entries. Built-in `ConsoleTransport` and `HttpTransport` already provide `write(entries)` for batched delivery. If you use a custom transport that only implements per-entry `log(entry)`, either add a `write(entries)` method or wrap it in a small adapter.
 
 ```js
-import { CoreLogger, LogLevel, ConsoleTransport } from '@svg-character-engine/audit-core';
+import { CoreLogger, LogLevel, ConsoleTransport } from '@al-masry/audit-core';
 
 const logger = new CoreLogger({
   name: 'app',
@@ -199,6 +207,21 @@ const logger = new CoreLogger({
 await logger.info('Application started', { env: process.env.NODE_ENV });
 await logger.debug('Debug details will be buffered/sanitized');
 await logger.drain(); // optional: wait for backpressure to clear (e.g., before shutdown)
+```
+
+## Example usage
+
+A minimal usage snippet inspired by `utils/example-logger-usage.js`:
+
+```js
+import { CoreLogger } from '@al-masry/audit-core';
+import { ConsoleTransport } from '@al-masry/audit-core';
+
+const transport = new ConsoleTransport();
+const logger = new CoreLogger({ name: 'app', transports: [transport] });
+
+await logger.info('Application started');
+await logger.debug('Vector calculation (debug)', { precision: 0.001, algorithm: 'Bresenham' });
 ```
 
 To try locally, save the snippet as `quick-start.mjs` and run:
@@ -258,7 +281,7 @@ node .\quick-start.mjs
 - File transport (Node-only) with adapter:
 
 ```js
-import { CoreLogger, FileTransport, LogLevel } from '@svg-character-engine/audit-core';
+import { CoreLogger, FileTransport, LogLevel } from '@al-masry/audit-core';
 
 class FileBatchAdapter {
   constructor(logDirectory) {
@@ -282,7 +305,7 @@ logger.warn('High latency on payment gateway', { provider: 'stripe', latencyMs: 
 - HTTP transport with exponential backoff and dead-letter queue:
 
 ```js
-import { CoreLogger, HttpTransport } from '@svg-character-engine/audit-core';
+import { CoreLogger, HttpTransport } from '@al-masry/audit-core';
 
 class HttpBatchAdapter {
   constructor(url, options) {
@@ -306,7 +329,7 @@ logger.error('Upstream service returned 503', { service: 'inventory', attempt: 3
 - Context and correlation:
 
 ```js
-import { LogContext } from '@svg-character-engine/audit-core';
+import { LogContext } from '@al-masry/audit-core';
 
 const correlationId = LogContext.initialize();
 logger.info('Start request', { correlationId });
@@ -319,7 +342,7 @@ LogContext.runWithContext(() => {
 - Dynamic configuration at runtime:
 
 ```js
-import { DynamicConfigIntegration } from '@svg-character-engine/audit-core';
+import { DynamicConfigIntegration } from '@al-masry/audit-core';
 
 DynamicConfigIntegration.enable({ defaultLogLevel: 'INFO' });
 DynamicConfigIntegration.setModuleLogLevel('api', 'WARN');
@@ -453,9 +476,21 @@ Run tests and coverage:
 - For public APIs, update this README and add inline JSDoc
 - Submit pull requests with a clear description and reproduction steps when fixing bugs
 
+## CommonJS Compatibility
+
+This package is **ESM-only** and requires **Node.js 18+**.
+The previous CommonJS compatibility shim (`index.cjs`) has been removed.
+If you need to use this library from a CommonJS project, load it via:
+
+```js
+(async () => {
+  const mod = await import('audit-core');
+})();
+```
+
 ## License
 
-No license is declared in the repository. Before using this software in production, please consult the repository owner to confirm licensing terms and add a LICENSE file.
+MIT License. See the `LICENSE` file for details.
 
 ## Contact & Support
 
@@ -467,7 +502,7 @@ For issues and feature requests, please open a GitHub issue in this repository. 
 
 ## Changelog / Version Info
 
-- 1.0.0 — Initial public version (as per `package.json`)
+- 1.0.0 — Stable production release with adaptive buffering, structured logging, and rate limiting.
 
 Notes:
 
@@ -478,26 +513,25 @@ Notes:
 
 The following table freezes the stable public API surface at version 1.0. Any additions must be explicitly approved and reflected in `api-manifest.json`.
 
-| Name | Kind | Stability | Source Path |
-| --- | --- | --- | --- |
-| CoreLogger | class | stable | ./core/core-logger.js |
-| Logger | class | stable | ./core/core-logger.js |
-| CoreLoggerConfig | class | stable | ./core/core-logger-config.js |
-| LoggerConfig | class | stable | ./config/logger-config.js |
-| ModuleConfig | class | stable | ./config/module-config.js |
-| DynamicConfig | class | stable | ./config/dynamic-config.js |
-| LogContext | class | stable | ./context/log-context.js |
-| RequestContext | class | stable | ./context/request-context.js |
-| ConsoleTransport | class | stable | ./transports/console-transport.js |
-| FileTransport | class | stable | ./transports/file-transport.js |
-| HttpTransport | class | stable | ./transports/http-transport.js |
-| LogBuffer | class | stable | ./transports/log-buffer.js |
-| AdaptiveLogBuffer | class | stable | ./transports/adaptive-log-buffer.js |
-| RateLimiter | class | stable | ./rate-limiting/rate-limiter.js |
-| LoggingError | class | stable | ./error-handling/errors.js |
-| DataSanitizer | class | stable | ./sanitizer/data-sanitizer.js |
-| EncodingDetector | class | stable | ./sanitizer/encoding-detector.js |
-| Mutex | class | stable | ./sync/mutex.js |
-| LogLevel | const | stable | ./utils/types.js |
-| LogEntry | class | stable | ./utils/log-entry.js |
-
+| Name              | Kind  | Stability | Source Path                         |
+| ----------------- | ----- | --------- | ----------------------------------- |
+| CoreLogger        | class | stable    | ./core/core-logger.js               |
+| Logger            | class | stable    | ./core/core-logger.js               |
+| CoreLoggerConfig  | class | stable    | ./core/core-logger-config.js        |
+| LoggerConfig      | class | stable    | ./config/logger-config.js           |
+| ModuleConfig      | class | stable    | ./config/module-config.js           |
+| DynamicConfig     | class | stable    | ./config/dynamic-config.js          |
+| LogContext        | class | stable    | ./context/log-context.js            |
+| RequestContext    | class | stable    | ./context/request-context.js        |
+| ConsoleTransport  | class | stable    | ./transports/console-transport.js   |
+| FileTransport     | class | stable    | ./transports/file-transport.js      |
+| HttpTransport     | class | stable    | ./transports/http-transport.js      |
+| LogBuffer         | class | stable    | ./transports/log-buffer.js          |
+| AdaptiveLogBuffer | class | stable    | ./transports/adaptive-log-buffer.js |
+| RateLimiter       | class | stable    | ./rate-limiting/rate-limiter.js     |
+| LoggingError      | class | stable    | ./error-handling/errors.js          |
+| DataSanitizer     | class | stable    | ./sanitizer/data-sanitizer.js       |
+| EncodingDetector  | class | stable    | ./sanitizer/encoding-detector.js    |
+| Mutex             | class | stable    | ./sync/mutex.js                     |
+| LogLevel          | const | stable    | ./utils/types.js                    |
+| LogEntry          | class | stable    | ./utils/log-entry.js                |

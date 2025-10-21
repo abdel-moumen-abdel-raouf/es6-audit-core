@@ -19,6 +19,26 @@
 			],
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Lint only sources",
+			"type": "shell",
+			"command": "eslint",
+			"args": [
+				"index.js",
+				"core/**/*.js",
+				"config/**/*.js",
+				"context/**/*.js",
+				"error-handling/**/*.js",
+				"rate-limiting/**/*.js",
+				"sanitizer/**/*.js",
+				"sync/**/*.js",
+				"transports/**/*.js",
+				"utils/**/*.js",
+				"tests/**/*.js"
+			],
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

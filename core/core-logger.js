@@ -128,7 +128,9 @@ export class CoreLogger {
     this.transports = (config.transports ?? []).filter((t) => this._isValidTransport(t));
     if (config.transports && this.transports.length !== config.transports.length) {
       // eslint-disable-next-line no-console
-      console.warn(`[${this.name}] Some transports were ignored due to invalid shape (expected write(entries) or log(entry))`);
+      console.warn(
+        `[${this.name}] Some transports were ignored due to invalid shape (expected write(entries) or log(entry))`
+      );
     }
 
     // Core statistics for monitoring
@@ -446,7 +448,9 @@ export class CoreLogger {
     }
     if (!this._isValidTransport(transport)) {
       // eslint-disable-next-line no-console
-      console.warn(`[${this.name}] Ignoring invalid transport (expected write(entries) or log(entry))`);
+      console.warn(
+        `[${this.name}] Ignoring invalid transport (expected write(entries) or log(entry))`
+      );
       return this;
     }
     this.transports.push(transport);
@@ -479,8 +483,7 @@ export class CoreLogger {
    */
   _isValidTransport(transport) {
     return (
-      transport &&
-      (typeof transport.write === 'function' || typeof transport.log === 'function')
+      transport && (typeof transport.write === 'function' || typeof transport.log === 'function')
     );
   }
 
