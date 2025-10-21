@@ -1,6 +1,6 @@
 {
   "name": "@al-masry/audit-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enterprise-grade audit and logging core - ES6 modules",
   "type": "module",
   "main": "./index.js",

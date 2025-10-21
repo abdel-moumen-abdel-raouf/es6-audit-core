@@ -21,7 +21,7 @@ class FileTransportImpl extends BaseTransport {
    * @throws {LoggingError} When configuration is invalid.
    */
   constructor(config) {
-    super();
+    super(config);
     if (!config.logDirectory || typeof config.logDirectory !== 'string') {
       throw new LoggingError('logDirectory must be a non-empty string');
     }
@@ -215,7 +215,7 @@ class FileTransportImpl extends BaseTransport {
   /**
    * Shutdown transport (flush queue and close streams)
    */
-  async shutdown() {
+  async close() {
     // Final flush
     await this._processWriteQueue();
 
@@ -228,12 +228,28 @@ class FileTransportImpl extends BaseTransport {
     // Close all streams
     for (const stream of this._fileStreams.values()) {
       try {
-        stream.destroy();
+        if (!stream.destroyed) {
+          const endPromise = new Promise((resolve) => {
+            stream.once('finish', resolve);
+            stream.once('close', resolve);
+            stream.once('error', resolve);
+          });
+          stream.end();
+          await endPromise;
+        }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn('Error closing stream:', error.message);
       }
     }
     this._fileStreams.clear();
+  }
+
+  /**
+   * Backward-compatibility alias
+   */
+  async shutdown() {
+    return this.close();
   }
 }
 

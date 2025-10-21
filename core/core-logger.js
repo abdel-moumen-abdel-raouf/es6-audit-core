@@ -125,12 +125,20 @@ export class CoreLogger {
     this.rateLimiter = new RateLimiter(config.rateLimiter);
 
     // Transport layer for outputting logs (validate shapes)
-    this.transports = (config.transports ?? []).filter((t) => this._isValidTransport(t));
+  this.transports = (config.transports ?? []).filter((t) => this._isValidTransport(t));
     if (config.transports && this.transports.length !== config.transports.length) {
       // eslint-disable-next-line no-console
       console.warn(
         `[${this.name}] Some transports were ignored due to invalid shape (expected write(entries) or log(entry))`
       );
+    }
+    // Inject error handler into existing transports
+    if (this.errorHandler) {
+      for (const t of this.transports) {
+        if (typeof t.setErrorHandler === 'function') {
+          t.setErrorHandler((err, ctx) => this._emitError(err, { message: 'transport', ...ctx }));
+        }
+      }
     }
 
     // Core statistics for monitoring
@@ -142,8 +150,13 @@ export class CoreLogger {
       rateLimited: 0, // Log entries rejected due to rate limiting
     };
 
-    // Pluggable error hook
-    this.onError = typeof config.onError === 'function' ? config.onError : null;
+    // Global error handler (preferred) and legacy onError hook support
+    this.errorHandler =
+      typeof config.errorHandler === 'function'
+        ? config.errorHandler
+        : typeof config.onError === 'function'
+        ? config.onError
+        : null;
 
     // Setup flush handler for transports (awaited by buffer)
     this.buffer.onFlush(async (entries) => {
@@ -184,6 +197,24 @@ export class CoreLogger {
 
     // Setup hooks for automatic transform context tracking
     this._setupTransformHooks();
+  }
+
+  /**
+   * Internal error emitter that uses the configured errorHandler if provided,
+   * with console fallback to ensure errors don't get swallowed.
+   * @private
+   */
+  _emitError(error, context) {
+    if (this.errorHandler) {
+      try {
+        this.errorHandler(error, { logger: this.name, ...((context && typeof context === 'object') ? context : { context }) });
+        return;
+      } catch (_) {
+        // fall back to console
+      }
+    }
+    // eslint-disable-next-line no-console
+    console.error(`[${this.name}]`, context?.message || 'Logger error', error?.message || error);
   }
 
   /**
@@ -278,12 +309,8 @@ export class CoreLogger {
       return true;
     } catch (error) {
       this.stats.errors++;
-      // Pluggable hook + concise console fallback
-      try {
-        this.onError && this.onError(error);
-      } catch {}
-      // eslint-disable-next-line no-console
-      console.error(`[${this.name}] Error logging: ${error?.message || error}`);
+      // Pluggable hook + concise fallback
+      this._emitError(error, { message: 'Error logging' });
       return false;
     }
   }
@@ -373,8 +400,7 @@ export class CoreLogger {
         this.stats.flushed += entries.length;
       } catch (error) {
         this.stats.errors++;
-        // eslint-disable-next-line no-console
-        console.error(`[${this.name}] Transport error: ${error?.message || error}`);
+        this._emitError(error, { message: 'Transport error' });
       }
     }
   }
@@ -452,6 +478,10 @@ export class CoreLogger {
         `[${this.name}] Ignoring invalid transport (expected write(entries) or log(entry))`
       );
       return this;
+    }
+    // Inject error handler into transport if supported
+    if (typeof transport.setErrorHandler === 'function') {
+      transport.setErrorHandler((err, ctx) => this._emitError(err, { message: 'transport', ...ctx }));
     }
     this.transports.push(transport);
     return this;
@@ -537,7 +567,7 @@ export class CoreLogger {
       return this.log(level, message, metadata);
     } catch (error) {
       this.stats.errors++;
-      console.error(`[${this.name}] Error logging with context:`, error);
+      this._emitError(error, { message: 'Error logging with context' });
       return false;
     }
   }
@@ -773,7 +803,7 @@ export class CoreLogger {
       return true;
     } catch (error) {
       this.stats.errors++;
-      console.error(`[${this.name}] Error setting object state:`, error);
+      this._emitError(error, { message: 'Error setting object state' });
       return false;
     }
   }
@@ -816,7 +846,7 @@ export class CoreLogger {
       return snapshot;
     } catch (error) {
       this.stats.errors++;
-      console.error(`[${this.name}] Error snapshotting context:`, error);
+      this._emitError(error, { message: 'Error snapshotting context' });
       return null;
     }
   }
@@ -856,7 +886,7 @@ export class CoreLogger {
       return true;
     } catch (error) {
       this.stats.errors++;
-      console.error(`[${this.name}] Error restoring snapshot:`, error);
+      this._emitError(error, { message: 'Error restoring snapshot' });
       return false;
     }
   }
@@ -980,6 +1010,32 @@ export class CoreLogger {
 
     if (this.buffer?.destroy) {
       this.buffer.destroy();
+    }
+  }
+
+  /**
+   * Gracefully close the logger and its transports.
+   * Attempts to flush buffers and call close() on each transport if provided (or shutdown()).
+   */
+  async close() {
+    try {
+      await this.flush();
+      // Close transports
+      for (const transport of this.transports) {
+        try {
+          if (typeof transport.close === 'function') {
+            // eslint-disable-next-line no-await-in-loop
+            await transport.close();
+          } else if (typeof transport.shutdown === 'function') {
+            // eslint-disable-next-line no-await-in-loop
+            await transport.shutdown();
+          }
+        } catch (tErr) {
+          this._emitError(tErr, { message: 'Error closing transport' });
+        }
+      }
+    } finally {
+      clearInterval(this.cleanupInterval);
     }
   }
 }
