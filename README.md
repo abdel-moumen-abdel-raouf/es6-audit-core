@@ -1,12 +1,13 @@
 # AuditCore — Enterprise-Grade ES6 Logging & Audit System
 
 ![Build](https://github.com/abdel-moumen-abdel-raouf/es6-audit-core/actions/workflows/ci.yml/badge.svg)
+![npm](https://img.shields.io/npm/v/@al-masry/audit-core)
 ![Coverage](https://img.shields.io/badge/coverage-c8-green)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 
 A high-performance, security-conscious logging and audit core for modern Node.js applications. Built as native ES Modules with production features including adaptive buffering with backpressure, rate limiting, sanitization/redaction, resilient transport chains, dynamic configuration, health checks, metrics, and distributed tracing.
 
-Published version: 1.0.0
+Published version: 1.0.0 (scoped as @al-masry/audit-core)
 
 ## Overview / Introduction
 
@@ -150,13 +151,15 @@ npm install
 Use as a package (npm):
 
 ```powershell
-npm install audit-core
+npm install @al-masry/audit-core
 ```
+
+Note: The package is published under the scoped name `@al-masry/audit-core`.
 
 ESM import (recommended):
 
 ```js
-import { CoreLogger, LogLevel } from 'audit-core';
+import { CoreLogger, LogLevel } from '@al-masry/audit-core';
 ```
 
 CommonJS usage:
@@ -166,7 +169,7 @@ CommonJS usage:
 
 ```js
 (async () => {
-  const { CoreLogger } = await import('audit-core');
+  const { CoreLogger } = await import('@al-masry/audit-core');
   const logger = new CoreLogger({ name: 'app' });
   logger.info('Hello from CJS via dynamic import');
 })();
@@ -182,7 +185,7 @@ Important async note:
 Transports and batching: CoreLogger flushes a batch of entries. Built-in `ConsoleTransport` and `HttpTransport` already provide `write(entries)` for batched delivery. If you use a custom transport that only implements per-entry `log(entry)`, either add a `write(entries)` method or wrap it in a small adapter.
 
 ```js
-import { CoreLogger, LogLevel, ConsoleTransport } from 'audit-core';
+import { CoreLogger, LogLevel, ConsoleTransport } from '@al-masry/audit-core';
 
 const logger = new CoreLogger({
   name: 'app',
@@ -211,8 +214,8 @@ await logger.drain(); // optional: wait for backpressure to clear (e.g., before 
 A minimal usage snippet inspired by `utils/example-logger-usage.js`:
 
 ```js
-import { CoreLogger } from 'audit-core';
-import { ConsoleTransport } from 'audit-core';
+import { CoreLogger } from '@al-masry/audit-core';
+import { ConsoleTransport } from '@al-masry/audit-core';
 
 const transport = new ConsoleTransport();
 const logger = new CoreLogger({ name: 'app', transports: [transport] });
@@ -278,7 +281,7 @@ node .\quick-start.mjs
 - File transport (Node-only) with adapter:
 
 ```js
-import { CoreLogger, FileTransport, LogLevel } from 'audit-core';
+import { CoreLogger, FileTransport, LogLevel } from '@al-masry/audit-core';
 
 class FileBatchAdapter {
   constructor(logDirectory) {
@@ -302,7 +305,7 @@ logger.warn('High latency on payment gateway', { provider: 'stripe', latencyMs: 
 - HTTP transport with exponential backoff and dead-letter queue:
 
 ```js
-import { CoreLogger, HttpTransport } from 'audit-core';
+import { CoreLogger, HttpTransport } from '@al-masry/audit-core';
 
 class HttpBatchAdapter {
   constructor(url, options) {
@@ -326,7 +329,7 @@ logger.error('Upstream service returned 503', { service: 'inventory', attempt: 3
 - Context and correlation:
 
 ```js
-import { LogContext } from 'audit-core';
+import { LogContext } from '@al-masry/audit-core';
 
 const correlationId = LogContext.initialize();
 logger.info('Start request', { correlationId });
@@ -339,7 +342,7 @@ LogContext.runWithContext(() => {
 - Dynamic configuration at runtime:
 
 ```js
-import { DynamicConfigIntegration } from 'audit-core';
+import { DynamicConfigIntegration } from '@al-masry/audit-core';
 
 DynamicConfigIntegration.enable({ defaultLogLevel: 'INFO' });
 DynamicConfigIntegration.setModuleLogLevel('api', 'WARN');
