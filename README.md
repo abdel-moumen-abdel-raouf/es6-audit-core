@@ -401,6 +401,27 @@ This library is primarily a set of ES classes. Highlights only:
 - `MetricsCollector` (metrics/metrics-collector.js) — internal module
 - `HealthCheckManager` (health/health-check-manager.js) — internal module
 
+### API stability status
+
+The following summarizes the public exports and their stability. Items marked Experimental may change without notice in a minor release; prefer Stable APIs for production.
+
+- Stable
+  - Core: `CoreLogger`
+  - Transports: `ConsoleTransport`, `FileTransport`, `HttpTransport`, `AdaptiveLogBuffer`, `LogBuffer`
+  - Config: `LoggerConfig`, `ModuleConfig`, `LogPresets`, `CoreLoggerConfig`, `DynamicConfigIntegration`
+  - Context & Error: `LogContext`, `RequestContext`, `LoggingError`
+  - Rate limiting: `RateLimiter`
+  - Utilities: `LogLevel`, `LogEntry`
+
+- Experimental
+  - Aliases: `EnhancedLogger`, `EnhancedLoggerV2`, `EnhancedLoggerV3`
+  - Specialized loggers: `AdaptiveLogger`, `ResilientLogger`
+  - Transport helpers: `BatchQueue`, `BatchSequencer`, `LogArchiver`, `LogRotator`, `LogCleanupPolicy`, `PayloadOptimizer`
+  - Rate limiting: `RateLimiterAdvanced`, `StrictBurstLimiter`, `MultiLayerRateLimiter`
+  - Sanitizer: `AdvancedSanitizer`, `EncodingDetector`
+  - Workers & Tracing: `WorkerThreadPool`, `WorkerThreadIntegration`, `LoggerWorkerIntegration`, `DistributedTracing`, `DistributedTracingIntegration`
+  - Utilities: `StackTrace`, `LogFormatter`, `ModulePatternMatcher`, `OutputCustomizer`, `MemorySafeContext`, `SupportSystems`
+
 
 Testing & Development
 

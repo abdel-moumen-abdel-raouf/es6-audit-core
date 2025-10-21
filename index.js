@@ -8,13 +8,18 @@
 // ⭐ Official Production Logger: CoreLogger
 // ========================================
 export { CoreLogger } from './core/core-logger.js';
+/** @experimental Aliases maintained for backward compatibility; may be removed in a future major release. */
 export { CoreLogger as EnhancedLogger } from './core/core-logger.js';
+/** @experimental */
 export { CoreLogger as EnhancedLoggerV2 } from './core/core-logger.js';
+/** @experimental */
 export { CoreLogger as EnhancedLoggerV3 } from './core/core-logger.js';
 export { CoreLogger as Logger } from './core/core-logger.js';
 
 // Additional specialized loggers
+/** @experimental Specialized loggers; API may change. */
 export { AdaptiveLoggerFixed as AdaptiveLogger } from './core/adaptive-logger.js';
+/** @experimental */
 export { ResilientLoggerFixed as ResilientLogger } from './core/resilient-logger.js';
 
 // ========================================
@@ -40,21 +45,28 @@ export { RequestContext } from './context/request-context.js';
 export { ConsoleTransport } from './transports/console-transport.js';
 export { FileTransport } from './transports/file-transport.js';
 export { AdvancedHttpTransport as HttpTransport } from './transports/http-transport.js';
+/** @experimental Transport helpers; stability not guaranteed. */
 export { BatchQueue } from './transports/batch-queue.js';
+/** @experimental */
 export { BatchSequencer } from './transports/batch-sequencer.js';
 export { default as LogBuffer } from './transports/log-buffer.js';
 export { AdaptiveLogBuffer } from './transports/adaptive-log-buffer.js';
 export { AdaptiveLogBuffer as EnhancedLogBuffer } from './transports/adaptive-log-buffer.js';
+/** @experimental */
 export { default as LogArchiver } from './transports/log-archiver.js';
 export { LogRotator } from './transports/log-rotator.js';
+/** @experimental */
 export { default as LogCleanupPolicy } from './transports/log-cleanup-policy.js';
+/** @experimental */
 export { PayloadOptimizer } from './transports/payload-rotation.js';
 
 // ========================================
 // Rate Limiting
 // ========================================
 export { RateLimiter } from './rate-limiting/rate-limiter.js';
+/** @experimental */
 export { AdvancedRateLimiter as RateLimiterAdvanced } from './rate-limiting/rate-limiter-advanced.js';
+/** @experimental */
 export { StrictBurstLimiter, MultiLayerRateLimiter } from './rate-limiting/rate-limiter-strict.js';
 
 // ========================================
@@ -62,7 +74,9 @@ export { StrictBurstLimiter, MultiLayerRateLimiter } from './rate-limiting/rate-
 // ========================================
 export { LoggingError } from './error-handling/errors.js';
 export { ContextualLogEntry } from './error-handling/contextual-log-entry.js';
+/** @experimental */
 export { ContextualLogEntry as EnhancedErrorLogEntry } from './error-handling/contextual-log-entry.js';
+/** @experimental */
 export { ErrorHandler } from './error-handling/error-handler.js';
 
 // ========================================
@@ -71,6 +85,7 @@ export { ErrorHandler } from './error-handling/error-handler.js';
 export { DataSanitizer } from './sanitizer/data-sanitizer.js';
 export { DataSanitizer as EnhancedSanitizer } from './sanitizer/data-sanitizer.js';
 export { EncodingDetector } from './sanitizer/encoding-detector.js';
+/** @experimental */
 export { AdvancedSanitizer } from './sanitizer/sanitizer-advanced.js';
 
 // ========================================
@@ -81,14 +96,18 @@ export { CircuitBreakerEnhanced as CircuitBreaker } from './resilience/circuit-b
 // ========================================
 // Worker Thread Integration
 // ========================================
+/** @experimental Worker utilities */
 export { WorkerThreadPool } from './workers/worker-thread-pool.js';
+/** @experimental */
 export { LoggerWithWorkerThreads as WorkerThreadIntegration } from './workers/worker-thread-integration.js';
+/** @experimental */
 export { LoggerWorkerIntegration } from './workers/worker-integration.js';
 
 // ========================================
 // Distributed Tracing
 // ========================================
 export { DistributedTracer as DistributedTracing } from './tracing/distributed-tracing.js';
+/** @experimental */
 export { DistributedTracingIntegration } from './tracing/tracing-integration.js';
 
 // ========================================
@@ -101,9 +120,15 @@ export { Mutex } from './sync/mutex.js';
 // ========================================
 export { LogLevel } from './utils/types.js';
 export { LogEntry } from './utils/log-entry.js';
+/** @experimental */
 export { StackTraceExtractor as StackTrace } from './utils/stack-trace.js';
+/** @experimental */
 export { LogFormatterManager as LogFormatter } from './utils/log-formatter.js';
+/** @experimental */
 export { ModulePatternMatcher } from './utils/module-pattern-matcher.js';
+/** @experimental */
 export { OutputCustomizer } from './utils/output-customizer.js';
+/** @experimental */
 export { ContextManager as MemorySafeContext } from './utils/memory-safe-context.js';
+/** @experimental */
 export { Sampler as SupportSystems } from './utils/support-systems.js';

@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Test
+        run: npm test
+      - name: Build
+        run: |
+          echo "No build step configured. Skipping."
+      - name: Generate release notes
+        id: changelog
+        run: |
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$(git log -1 --pretty=format:'%s%n%n%b')" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.changelog.outputs.notes }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
