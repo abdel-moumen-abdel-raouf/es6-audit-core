@@ -9,6 +9,16 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Run all tests",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"./tests/run-all-tests.js"
+			],
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

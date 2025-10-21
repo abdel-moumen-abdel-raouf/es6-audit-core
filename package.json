@@ -20,10 +20,12 @@
     "enterprise"
   ],
   "scripts": {
-    "test": "node ./tests/basic.test.js",
+    "test": "node ./tests/run-all-tests.js",
+    "test:basic": "node ./tests/basic.test.js",
+    "test:core": "node ./tests/core.test.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/basic.test.js"
+    "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/run-all-tests.js"
   },
   "engines": {
     "node": ">=18.0.0"

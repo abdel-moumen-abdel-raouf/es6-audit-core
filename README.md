@@ -429,11 +429,12 @@ Testing & Development
 
 ## Deployment
 
-- Runtime:
-  - Node.js >= 14 recommended; ES Modules (`"type": "module"`)
-  - For file transport: ensure the log directory exists and the process has write permissions
-- Graceful shutdown:
-  - Call `logger.flush()` or `await logger.drain()` before exiting
+Run tests and coverage:
+
+- Run all tests: npm test
+- Run only basic tests: npm run test:basic
+- Run only core tests: npm run test:core
+- Generate coverage: npm run coverage
   - For file transport, call `await fileTransport.shutdown()`
 - Docker (example):
   - Mount persistent volume for file logs
