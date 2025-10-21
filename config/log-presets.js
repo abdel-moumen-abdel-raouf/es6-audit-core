@@ -1,6 +1,6 @@
 /**
  * Log Presets
- * 
+ *
  * Predefined logging configurations for common use cases:
  * - Development: Verbose output with colors
  * - Production: Performance-optimized, minimal output
@@ -8,9 +8,18 @@
  * - Debugging: Maximum detail, stack traces, context
  */
 
-import { LogFormatterManager, DefaultFormatter, JSONFormatter, CompactFormatter } from '../utils/log-formatter.js';
+import {
+  LogFormatterManager,
+  DefaultFormatter,
+  JSONFormatter,
+  CompactFormatter,
+} from '../utils/log-formatter.js';
 import { ColorConfig, ColorTheme, ANSIColors } from './color-config.js';
-import { OutputCustomizer, PrefixTransformer, FilterTransformer } from '../utils/output-customizer.js';
+import {
+  OutputCustomizer,
+  PrefixTransformer,
+  FilterTransformer,
+} from '../utils/output-customizer.js';
 
 /**
  * Preset Configuration
@@ -46,7 +55,7 @@ class PresetConfig {
       minLevel: this.minLevel,
       contextIncluded: this.contextIncluded,
       stackTraceIncluded: this.stackTraceIncluded,
-      correlationIdIncluded: this.correlationIdIncluded
+      correlationIdIncluded: this.correlationIdIncluded,
     };
   }
 }
@@ -63,8 +72,7 @@ class LogPresets {
    */
   static {
     // Development Preset
-    const devCustomizer = new OutputCustomizer()
-      .addTransformer(new PrefixTransformer('🔧 [DEV] '));
+    const devCustomizer = new OutputCustomizer().addTransformer(new PrefixTransformer('🔧 [DEV] '));
 
     LogPresets.registerPreset(
       'development',
@@ -78,13 +86,14 @@ class LogPresets {
         stackTraceIncluded: true,
         correlationIdIncluded: true,
         outputCustomizer: devCustomizer,
-        transports: ['console']
+        transports: ['console'],
       })
     );
 
     // Production Preset
-    const prodCustomizer = new OutputCustomizer()
-      .addTransformer(new FilterTransformer(entry => entry.level >= 1)); // INFO and above
+    const prodCustomizer = new OutputCustomizer().addTransformer(
+      new FilterTransformer((entry) => entry.level >= 1)
+    ); // INFO and above
 
     LogPresets.registerPreset(
       'production',
@@ -98,13 +107,14 @@ class LogPresets {
         stackTraceIncluded: false,
         correlationIdIncluded: true,
         outputCustomizer: prodCustomizer,
-        transports: ['console', 'file']
+        transports: ['console', 'file'],
       })
     );
 
     // Testing Preset
-    const testCustomizer = new OutputCustomizer()
-      .addTransformer(new FilterTransformer(entry => entry.level >= 2)); // WARN and above
+    const testCustomizer = new OutputCustomizer().addTransformer(
+      new FilterTransformer((entry) => entry.level >= 2)
+    ); // WARN and above
 
     LogPresets.registerPreset(
       'testing',
@@ -118,13 +128,14 @@ class LogPresets {
         stackTraceIncluded: false,
         correlationIdIncluded: false,
         outputCustomizer: testCustomizer,
-        transports: ['console']
+        transports: ['console'],
       })
     );
 
     // Debugging Preset
-    const debugCustomizer = new OutputCustomizer()
-      .addTransformer(new PrefixTransformer('🐛 [DEBUG] '));
+    const debugCustomizer = new OutputCustomizer().addTransformer(
+      new PrefixTransformer('🐛 [DEBUG] ')
+    );
 
     LogPresets.registerPreset(
       'debugging',
@@ -138,7 +149,7 @@ class LogPresets {
         stackTraceIncluded: true,
         correlationIdIncluded: true,
         outputCustomizer: debugCustomizer,
-        transports: ['console', 'file']
+        transports: ['console', 'file'],
       })
     );
 
@@ -242,7 +253,7 @@ class LogPresets {
       stackTraceIncluded: config.stackTraceIncluded ?? true,
       correlationIdIncluded: config.correlationIdIncluded ?? true,
       outputCustomizer: config.outputCustomizer,
-      transports: config.transports || []
+      transports: config.transports || [],
     });
 
     this.registerPreset(name, preset);
@@ -267,7 +278,7 @@ class LogPresets {
       contextIncluded: preset.contextIncluded,
       stackTraceIncluded: preset.stackTraceIncluded,
       correlationIdIncluded: preset.correlationIdIncluded,
-      transports: preset.transports
+      transports: preset.transports,
     };
   }
 
@@ -280,8 +291,8 @@ class LogPresets {
       currentPreset: this.#currentPreset?.name || null,
       availablePresets: this.listPresets(),
       presets: Object.fromEntries(
-        this.listPresets().map(name => [name, this.getPresetInfo(name)])
-      )
+        this.listPresets().map((name) => [name, this.getPresetInfo(name)])
+      ),
     };
   }
 
@@ -304,8 +315,8 @@ class LogPresets {
         minLevel: preset1.minLevel !== preset2.minLevel,
         contextIncluded: preset1.contextIncluded !== preset2.contextIncluded,
         stackTraceIncluded: preset1.stackTraceIncluded !== preset2.stackTraceIncluded,
-        correlationIdIncluded: preset1.correlationIdIncluded !== preset2.correlationIdIncluded
-      }
+        correlationIdIncluded: preset1.correlationIdIncluded !== preset2.correlationIdIncluded,
+      },
     };
   }
 
@@ -341,7 +352,4 @@ class LogPresets {
   }
 }
 
-export {
-  PresetConfig,
-  LogPresets
-};
+export { PresetConfig, LogPresets };

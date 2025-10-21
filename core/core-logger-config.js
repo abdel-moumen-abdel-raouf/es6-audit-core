@@ -1,11 +1,11 @@
 /**
  * CoreLoggerConfig
- * 
+ *
  * Configuration manager for CoreLogger with support for:
  * - Module-specific log levels
  * - Dynamic level updates
  * - Pattern-based configuration
- * 
+ *
  * Integrates with ModuleConfig for advanced module management
  */
 
@@ -17,42 +17,37 @@ import { LoggingError } from '../error-handling/errors.js';
 export class CoreLoggerConfig {
   /**
    * Create new CoreLoggerConfig
-   * 
+   *
    * @param {Object} config - Configuration object
    * @param {number} config.defaultLevel - Default log level (default: LogLevel.INFO)
    * @param {BaseTransport[]} config.transports - List of transports (required)
    * @param {string} config.moduleName - Current module name (default: 'app')
    * @param {Object} config.moduleConfig - ModuleConfig instance (optional)
-   * 
+   *
    * @throws {LoggingError} If configuration is invalid
    */
   constructor(config = {}) {
     this._validateConfig(config);
-    
-    
+
     this.defaultLevel = config.defaultLevel ?? LogLevel.INFO;
     this.moduleName = config.moduleName ?? 'app';
     this.transports = Object.freeze([...config.transports]);
-    
-    
+
     if (config.moduleConfig instanceof ModuleConfig) {
       this.moduleConfig = config.moduleConfig;
     } else {
       this.moduleConfig = new ModuleConfig(this.defaultLevel);
     }
-    
-    
+
     this.listeners = [];
-    
-    
+
     this._setupModuleConfigListener();
-    
-    
+
     Object.freeze(this);
   }
 
   /**
-   * 
+   *
    * @private
    */
   _validateConfig(config) {
@@ -66,17 +61,13 @@ export class CoreLoggerConfig {
 
     config.transports.forEach((transport, index) => {
       if (!(transport instanceof BaseTransport)) {
-        throw new LoggingError(
-          `Transport at index ${index} must be an instance of BaseTransport`
-        );
+        throw new LoggingError(`Transport at index ${index} must be an instance of BaseTransport`);
       }
     });
 
     if (config.defaultLevel !== undefined) {
       if (typeof config.defaultLevel !== 'number' || !(config.defaultLevel in LogLevel)) {
-        throw new LoggingError(
-          `Invalid default log level: ${config.defaultLevel}`
-        );
+        throw new LoggingError(`Invalid default log level: ${config.defaultLevel}`);
       }
     }
 
@@ -92,47 +83,46 @@ export class CoreLoggerConfig {
   }
 
   /**
-   * 
+   *
    * @private
    */
   _setupModuleConfigListener() {
     this.moduleConfig.onChange((change) => {
       this._notifyListeners({
         type: 'moduleConfigChanged',
-        change
+        change,
       });
     });
   }
 
   /**
-   * 
-   * 
+   *
+   *
    */
   getLogLevelForModule(moduleName) {
     if (!moduleName) {
       return this.defaultLevel;
     }
 
-    
     return this.moduleConfig.getLogLevelForModule(moduleName);
   }
 
   /**
-   * 
+   *
    */
   setModuleLevel(moduleName, level) {
     this.moduleConfig.setModuleLevel(moduleName, level);
   }
 
   /**
-   * 
+   *
    */
   setPatternLevel(pattern, level) {
     this.moduleConfig.setPatternLevel(pattern, level);
   }
 
   /**
-   * 
+   *
    * @returns {ModuleConfig}
    */
   getModuleConfig() {
@@ -140,7 +130,7 @@ export class CoreLoggerConfig {
   }
 
   /**
-   * 
+   *
    * @returns {BaseTransport[]}
    */
   getTransports() {
@@ -148,7 +138,7 @@ export class CoreLoggerConfig {
   }
 
   /**
-   * 
+   *
    * @returns {Object}
    */
   getInfo() {
@@ -156,13 +146,13 @@ export class CoreLoggerConfig {
       defaultLevel: LogLevel[this.defaultLevel],
       moduleName: this.moduleName,
       transportsCount: this.transports.length,
-      transportsTypes: this.transports.map(t => t.constructor.name),
-      moduleConfigSize: this.moduleConfig.getAll()
+      transportsTypes: this.transports.map((t) => t.constructor.name),
+      moduleConfigSize: this.moduleConfig.getAll(),
     };
   }
 
   /**
-   * 
+   *
    */
   onChange(callback) {
     if (typeof callback !== 'function') {
@@ -180,7 +170,7 @@ export class CoreLoggerConfig {
   }
 
   /**
-   * 
+   *
    * @private
    */
   _notifyListeners(change) {
@@ -194,7 +184,7 @@ export class CoreLoggerConfig {
   }
 
   /**
-   * 
+   *
    * @returns {string}
    */
   toJSON() {
@@ -202,7 +192,7 @@ export class CoreLoggerConfig {
       defaultLevel: this.defaultLevel,
       moduleName: this.moduleName,
       transportsCount: this.transports.length,
-      moduleConfig: this.moduleConfig.getAll()
+      moduleConfig: this.moduleConfig.getAll(),
     });
   }
 }

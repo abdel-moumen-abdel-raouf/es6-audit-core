@@ -1,11 +1,11 @@
 /**
  * Logger Worker Thread Integration
- * 
+ *
  * Transparent worker thread integration for offloading logging operations:
  * - Worker thread pool management
  * - Transparent worker usage
  * - Performance monitoring
- * 
+ *
  * @module LoggerWorkerIntegration
  * @version 1.0.0
  */
@@ -18,8 +18,8 @@ export class LoggerWorkerIntegration {
   static #poolSize = 2;
 
   /**
- * 
- */
+   *
+   */
   static enable(config = {}) {
     if (this.#enabled) {
       return this.#workerPool;
@@ -29,19 +29,19 @@ export class LoggerWorkerIntegration {
     this.#workerPool = new WorkerThreadPool({
       poolSize: this.#poolSize,
       timeout: config.workerTimeout ?? 5000,
-      logger: config.logger || null
+      logger: config.logger || null,
     });
 
     this.#enabled = true;
 
     console.log(`[LoggerWorker] ✅ Worker thread pool initialized (size: ${this.#poolSize})`);
-    
+
     return this.#workerPool;
   }
 
   /**
- * 
- */
+   *
+   */
   static disable() {
     if (this.#enabled && this.#workerPool) {
       this.#workerPool?.terminate?.();
@@ -53,18 +53,17 @@ export class LoggerWorkerIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static getPool() {
     return this.#workerPool;
   }
 
   /**
- * 
- */
+   *
+   */
   static async executeLoggingTask(task) {
     if (!this.#enabled || !this.#workerPool) {
-      
       return task();
     }
 
@@ -78,8 +77,8 @@ export class LoggerWorkerIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static getStats() {
     if (!this.#workerPool) {
       return { enabled: false };
@@ -88,40 +87,34 @@ export class LoggerWorkerIntegration {
     return {
       enabled: this.#enabled,
       poolSize: this.#poolSize,
-      ...this.#workerPool.getStats?.()
+      ...this.#workerPool.getStats?.(),
     };
   }
 
   /**
- * 
- */
+   *
+   */
   static patchEnhancedLogger(EnhancedLoggerClass) {
     const originalConstructor = EnhancedLoggerClass.prototype.constructor;
 
-    EnhancedLoggerClass.prototype.constructor = function(moduleName, config) {
-      
+    EnhancedLoggerClass.prototype.constructor = function (moduleName, config) {
       originalConstructor.call(this, moduleName, config);
 
-      
       if (config.useWorkerThreads) {
         LoggerWorkerIntegration.enable({
           workerThreads: config.workerThreadCount ?? 2,
-          logger: config.logger || null
+          logger: config.logger || null,
         });
 
         this.useWorkerThread = true;
       }
     };
 
-    
     const originalLog = EnhancedLoggerClass.prototype.log;
 
-    
-    EnhancedLoggerClass.prototype.log = async function(...args) {
+    EnhancedLoggerClass.prototype.log = async function (...args) {
       if (this.useWorkerThread && LoggerWorkerIntegration.getPool()) {
-        return LoggerWorkerIntegration.executeLoggingTask(
-          () => originalLog.call(this, ...args)
-        );
+        return LoggerWorkerIntegration.executeLoggingTask(() => originalLog.call(this, ...args));
       }
 
       return originalLog.call(this, ...args);

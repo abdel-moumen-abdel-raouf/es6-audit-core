@@ -1,6 +1,6 @@
 /**
  * Output Customization System
- * 
+ *
  * Provides advanced output customization:
  * - Custom transport handlers
  * - Output transformation pipeline
@@ -57,7 +57,7 @@ class PrefixTransformer extends OutputTransformer {
 
     return output
       .split('\n')
-      .map(line => `${prefix}${line}`)
+      .map((line) => `${prefix}${line}`)
       .join('\n');
   }
 }
@@ -244,7 +244,7 @@ class OutputCustomizer {
    * @returns {boolean} True if removed
    */
   removeTransformer(name) {
-    const index = this.#transformers.findIndex(t => t.getName() === name);
+    const index = this.#transformers.findIndex((t) => t.getName() === name);
     if (index !== -1) {
       this.#transformers.splice(index, 1);
       return true;
@@ -413,7 +413,8 @@ class CustomHandlers {
   static createEmailHandler(emailAddress) {
     return async (output, entry) => {
       try {
-        if (entry.level >= 3) { // ERROR only
+        if (entry.level >= 3) {
+          // ERROR only
           console.log(`📧 Email: ${emailAddress} - ${output.substring(0, 50)}...`);
         }
       } catch (error) {
@@ -507,5 +508,5 @@ export {
   TruncateTransformer,
   RoutingRule,
   OutputCustomizer,
-  CustomHandlers
+  CustomHandlers,
 };

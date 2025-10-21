@@ -1,12 +1,12 @@
 ﻿/**
  * Worker Threads Integration - Fix #21
- * 
+ *
  * Ø§Ù„Ù…Ù…ÙŠØ²Ø§Øª:
  * - Fully asynchronous logging in background worker
  * - Non-blocking main thread
  * - Safe message passing
  * - Automatic fallback to main thread if unavailable
- * 
+ *
  * @author audit-core
  * @version 1.0.0-fix21
  */
@@ -27,7 +27,7 @@ export class WorkerThreadLogger {
     this.maxQueueSize = config.maxQueueSize ?? 10000;
     this.timeout = config.timeout ?? 5000;
     this.useWorker = this.enabled;
-    
+
     this.worker = null;
     this.queue = [];
     this.isReady = false;
@@ -36,7 +36,7 @@ export class WorkerThreadLogger {
       queued: 0,
       processedByWorker: 0,
       fallbackToMain: 0,
-      errors: 0
+      errors: 0,
     };
 
     if (this.enabled) {
@@ -130,7 +130,6 @@ export class WorkerThreadLogger {
 
       this.isReady = true;
       console.log('[WorkerThreadLogger] Worker initialized');
-
     } catch (error) {
       console.error('[WorkerThreadLogger] Failed to initialize worker:', error);
       this.useWorker = false; // Fallback to main thread
@@ -161,7 +160,7 @@ export class WorkerThreadLogger {
           type: 'log',
           id: messageId,
           data: entry,
-          batchSize
+          batchSize,
         });
 
         this.stats.queued++;
@@ -171,7 +170,6 @@ export class WorkerThreadLogger {
           clearTimeout(timeout);
           resolve();
         }, 100);
-
       } catch (error) {
         clearTimeout(timeout);
         this.stats.fallbackToMain++;
@@ -187,7 +185,7 @@ export class WorkerThreadLogger {
   _logInMainThread(entry) {
     // Fallback implementation
     this.queue.push(entry);
-    
+
     if (this.queue.length >= 50) {
       const batch = this.queue.splice(0, 50);
       // Process batch in main thread
@@ -202,8 +200,7 @@ export class WorkerThreadLogger {
   _handleWorkerMessage(message) {
     if (message.type === 'ack') {
       // Log received by worker
-    }
-    else if (message.type === 'batch_processed') {
+    } else if (message.type === 'batch_processed') {
       this.stats.processedByWorker += message.count;
     }
   }
@@ -257,7 +254,7 @@ export class WorkerThreadLogger {
     return {
       ...this.stats,
       isWorkerActive: this.useWorker && this.isReady,
-      queueSize: this.queue.length
+      queueSize: this.queue.length,
     };
   }
 }
@@ -273,18 +270,18 @@ export class LoggerWithWorkerThreads {
   constructor(config = {}) {
     this.mainLogger = config.mainLogger; // Main logger instance
     this.useWorkerThreads = config.useWorkerThreads ?? false;
-    
+
     if (this.useWorkerThreads) {
       this.workerLogger = new WorkerThreadLogger({
         enabled: true,
         maxQueueSize: config.maxQueueSize,
-        timeout: config.timeout
+        timeout: config.timeout,
       });
     }
 
     this.stats = {
       mainThread: 0,
-      workerThread: 0
+      workerThread: 0,
     };
   }
 
@@ -313,7 +310,7 @@ export class LoggerWithWorkerThreads {
    */
   setWorkerThreadsEnabled(enabled) {
     this.useWorkerThreads = enabled;
-    
+
     if (enabled && !this.workerLogger) {
       this.workerLogger = new WorkerThreadLogger({ enabled: true });
     }
@@ -326,7 +323,7 @@ export class LoggerWithWorkerThreads {
     return {
       mainThread: this.stats.mainThread,
       workerThread: this.stats.workerThread,
-      worker: this.workerLogger?.getStatistics()
+      worker: this.workerLogger?.getStatistics(),
     };
   }
 
@@ -352,9 +349,8 @@ export function createLoggerWithOptionalWorkers(config = {}) {
     useWorkerThreads: config.useWorkerThreads ?? false, // Off by default
     maxQueueSize: config.maxQueueSize ?? 10000,
     timeout: config.timeout ?? 5000,
-    mainLogger: config.mainLogger // Must provide main logger
+    mainLogger: config.mainLogger, // Must provide main logger
   });
 }
 
 export default WorkerThreadLogger;
-

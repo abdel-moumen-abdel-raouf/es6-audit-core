@@ -1,7 +1,7 @@
 /**
  * Core Logging Module - AuditCore
  * Central logging implementations and configurations
- * 
+ *
  * ⭐ Official Production Logger: CoreLogger
  * - Full buffer management & rate limiting
  * - Transform context tracking

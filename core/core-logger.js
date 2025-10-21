@@ -1,60 +1,60 @@
 /**
  * CoreLogger - Professional Production-Grade Logger
- * 
+ *
  * Enterprise-level logging system with comprehensive features for production environments.
  * Designed for high-volume logging scenarios with built-in performance optimization.
- * 
+ *
  * CORE FEATURES:
  * ─────────────────────────────────────────────────────────────────────────────
- * 
+ *
  * 1. BUFFER MANAGEMENT & BACKPRESSURE
  *    - Adaptive log buffer with memory-aware sizing
  *    - Intelligent backpressure detection and handling
  *    - High water mark threshold management
  *    - Automatic flush optimization
- * 
+ *
  * 2. RATE LIMITING
  *    - Per-module rate limiting to prevent log flooding
  *    - Configurable burst allowance and window duration
  *    - Automatic cleanup of expired rate limit entries
- * 
+ *
  * 3. SANITIZATION & SECURITY
  *    - Automatic sensitive data detection and redaction
  *    - Support for custom sensitive key patterns
  *    - Encoding detection (Base64, URL, Hex, etc.)
  *    - Circular reference handling
- * 
+ *
  * 4. TRANSPORT LAYER
  *    - Extensible multi-transport architecture
  *    - Support for console, file, HTTP, and custom transports
  *    - Independent error handling per transport
  *    - Chainable API for transport management
- * 
+ *
  * 5. TRANSFORM CONTEXT TRACKING
  *    - Hierarchical object relationship management
  *    - Transform data (position, rotation, scale) tracking
  *    - Object state snapshots and restoration
  *    - World transform computation logging
- * 
+ *
  * 6. ADVANCED LOGGING CAPABILITIES
  *    - Context-aware logging with metadata enrichment
  *    - Batch logging operations for efficiency
  *    - Structured logging with correlation IDs
  *    - Hierarchical logging with parent-child relationships
- * 
+ *
  * 7. STATISTICS & MONITORING
  *    - Real-time statistics collection
  *    - Comprehensive performance metrics
  *    - Built-in health check capabilities
  *    - Detailed reporting and snapshots
- * 
+ *
  * ARCHITECTURE:
  * ─────────────────────────────────────────────────────────────────────────────
  * CoreLogger combines three major components:
  * - AdaptiveLogBuffer: Handles buffering and backpressure management
  * - RateLimiter: Controls logging rate and prevents spam
  * - Transform Context: Maintains object relationships and state
- * 
+ *
  * @module CoreLogger
  * @version 1.0.0
  * @author AuditCore Team
@@ -71,11 +71,11 @@ import { LoggingError } from '../error-handling/errors.js';
 
 /**
  * CoreLogger - Main Logger Class
- * 
+ *
  * Professional production-grade logger implementing advanced logging patterns.
  * Provides comprehensive logging capabilities with built-in performance optimization,
  * context tracking, and transform management.
- * 
+ *
  * CONFIGURATION:
  * ─────────────────────────────────────────────────────────────────────────────
  * @param {Object} config - Configuration object
@@ -85,55 +85,55 @@ import { LoggingError } from '../error-handling/errors.js';
  * @param {Array} [config.transports] - Array of transport instances
  * @param {boolean} [config.enableTransformLogging=true] - Enable transform context tracking
  * @param {Map} [config.transformContext] - Existing transform context (optional)
- * 
+ *
  * USAGE EXAMPLE:
  * ─────────────────────────────────────────────────────────────────────────────
  * import { CoreLogger } from './core/core-logger.js';
  * import { ConsoleTransport } from './transports/console-transport.js';
- * 
+ *
  * const logger = new CoreLogger({
  *   name: 'app',
  *   transports: [new ConsoleTransport()]
  * });
- * 
+ *
  * logger.info('Application started');
  * logger.registerObject('obj-1', { position: [0, 0, 0] });
  * logger.infoWithContext('obj-1', 'Object transform updated');
- * 
+ *
  * @throws {LoggingError} If configuration is invalid
  * @class CoreLogger
  */
 export class CoreLogger {
   /**
-   * 
+   *
    * @param {Map} config.transformContext - Transform context instance (optional)
-   * 
+   *
    */
   constructor(config = {}) {
     this._validateConfig(config);
 
     this.name = config.name ?? 'Logger';
-    
+
     // ═════════════════════════════════════════════════════════════════
     // CORE COMPONENTS INITIALIZATION
     // ═════════════════════════════════════════════════════════════════
-    
+
     // Initialize buffer for managing log entries with backpressure
     this.buffer = new AdaptiveLogBuffer(config.buffer);
-    
+
     // Initialize rate limiter to control logging rate and prevent spam
     this.rateLimiter = new RateLimiter(config.rateLimiter);
-    
+
     // Transport layer for outputting logs
     this.transports = config.transports ?? [];
-    
+
     // Core statistics for monitoring
     this.stats = {
-      logged: 0,           // Total log entries successfully accepted
-      rejected: 0,         // Log entries rejected due to backpressure
-      flushed: 0,          // Log entries sent to transports
-      errors: 0,           // Errors during logging operations
-      rateLimited: 0       // Log entries rejected due to rate limiting
+      logged: 0, // Total log entries successfully accepted
+      rejected: 0, // Log entries rejected due to backpressure
+      flushed: 0, // Log entries sent to transports
+      errors: 0, // Errors during logging operations
+      rateLimited: 0, // Log entries rejected due to rate limiting
     };
 
     // Pluggable error hook
@@ -152,28 +152,28 @@ export class CoreLogger {
     // ═════════════════════════════════════════════════════════════════
     // TRANSFORM CONTEXT TRACKING
     // ═════════════════════════════════════════════════════════════════
-    
+
     // Map storing transform context information for objects
     this.transformContext = config.transformContext ?? new Map();
-    
+
     // Enable/disable transform context tracking feature
     this.enableTransformLogging = config.enableTransformLogging !== false;
-    
+
     // Cache object state snapshots (objectId -> state snapshot)
     this.objectStates = new Map();
-    
+
     // Track object hierarchy relationships (objectId -> {parent, children, level})
     this.objectHierarchy = new Map();
-    
+
     // Store context snapshots for debugging and recovery
     this.contextSnapshots = new Map();
-    
+
     // Statistics for transform-specific operations
     this.transformStats = {
-      contextLogs: 0,       // Logs made with context information
-      transformUpdates: 0,  // Transform updates recorded
-      hierarchyChanges: 0,  // Hierarchy relationship changes
-      stateSnapshots: 0     // State snapshots created
+      contextLogs: 0, // Logs made with context information
+      transformUpdates: 0, // Transform updates recorded
+      hierarchyChanges: 0, // Hierarchy relationship changes
+      stateSnapshots: 0, // State snapshots created
     };
 
     // Setup hooks for automatic transform context tracking
@@ -182,10 +182,10 @@ export class CoreLogger {
 
   /**
    * Validate logger configuration
-   * 
+   *
    * Performs comprehensive validation of configuration parameters to ensure
    * logger is properly initialized with valid settings.
-   * 
+   *
    * @private
    * @param {Object} config - Configuration object to validate
    * @throws {LoggingError} If any configuration parameter is invalid
@@ -200,24 +200,24 @@ export class CoreLogger {
       throw new LoggingError('Transports must be an array');
     }
 
-    if (config.enableTransformLogging !== undefined && typeof config.enableTransformLogging !== 'boolean') {
+    if (
+      config.enableTransformLogging !== undefined &&
+      typeof config.enableTransformLogging !== 'boolean'
+    ) {
       throw new LoggingError('enableTransformLogging must be a boolean');
     }
   }
 
   /**
    * Setup hooks for transform context
-   * 
+   *
    * Initializes listeners and hooks for automatic tracking of transform context
    * changes and updates.
-   * 
+   *
    * @private
    * @returns {void}
    */
-  _setupTransformHooks() {
-    
-    
-  }
+  _setupTransformHooks() {}
 
   // ═════════════════════════════════════════════════════════════════
   // CORE LOGGING METHODS
@@ -225,23 +225,23 @@ export class CoreLogger {
 
   /**
    * Log an entry at the specified level
-   * 
+   *
    * Core logging method that handles rate limiting, buffer management,
    * and backpressure detection. Returns false if the log entry was rejected.
-   * 
+   *
    * RATE LIMITING:
    * If rate limiting is active for this logger module, the entry may be
    * rejected to prevent log flooding.
-   * 
+   *
    * BACKPRESSURE:
    * If the buffer is full (high water mark reached), the entry is rejected
    * to prevent memory issues and signal backpressure.
-   * 
+   *
    * @param {number} level - Log level (see LogLevel constants)
    * @param {string} message - Log message content
    * @param {Object} [metadata={}] - Additional metadata for the log entry
    * @returns {boolean} true if logged successfully, false if rejected
-   * 
+   *
    * @example
    * // Log with metadata
    * logger.log(LogLevel.INFO, 'User logged in', {
@@ -273,7 +273,9 @@ export class CoreLogger {
     } catch (error) {
       this.stats.errors++;
       // Pluggable hook + concise console fallback
-      try { this.onError && this.onError(error); } catch {}
+      try {
+        this.onError && this.onError(error);
+      } catch {}
       // eslint-disable-next-line no-console
       console.error(`[${this.name}] Error logging: ${error?.message || error}`);
       return false;
@@ -282,10 +284,10 @@ export class CoreLogger {
 
   /**
    * Log a debug-level message
-   * 
+   *
    * Convenience method for logging debug messages. Debug logs are typically
    * used for detailed diagnostic information during development.
-   * 
+   *
    * @param {string} message - Debug message
    * @param {Object} [metadata] - Additional metadata
    * @returns {boolean} true if logged successfully, false if rejected
@@ -296,10 +298,10 @@ export class CoreLogger {
 
   /**
    * Log an info-level message
-   * 
+   *
    * Convenience method for logging informational messages. Info logs are used
    * for important application events and state changes.
-   * 
+   *
    * @param {string} message - Info message
    * @param {Object} [metadata] - Additional metadata
    * @returns {boolean} true if logged successfully, false if rejected
@@ -310,10 +312,10 @@ export class CoreLogger {
 
   /**
    * Log a warning-level message
-   * 
+   *
    * Convenience method for logging warnings. Warnings indicate potentially
    * problematic conditions that should be addressed but don't prevent operation.
-   * 
+   *
    * @param {string} message - Warning message
    * @param {Object} [metadata] - Additional metadata
    * @returns {boolean} true if logged successfully, false if rejected
@@ -324,10 +326,10 @@ export class CoreLogger {
 
   /**
    * Log an error-level message
-   * 
+   *
    * Convenience method for logging errors. Errors indicate serious problems
    * that require immediate attention and may affect functionality.
-   * 
+   *
    * @param {string} message - Error message
    * @param {Object} [metadata] - Additional metadata (usually includes error object or stack trace)
    * @returns {boolean} true if logged successfully, false if rejected
@@ -338,14 +340,14 @@ export class CoreLogger {
 
   /**
    * Handle buffered log entries flush
-   * 
+   *
    * Internal method called when the buffer reaches its flush threshold.
    * Sends accumulated log entries to all registered transports.
-   * 
+   *
    * ERROR HANDLING:
    * Errors in individual transports are caught and logged, allowing
    * other transports to continue operating.
-   * 
+   *
    * @private
    * @param {Array} entries - Array of LogEntry objects to flush
    * @returns {void}
@@ -373,15 +375,15 @@ export class CoreLogger {
 
   /**
    * Manually flush the buffer
-   * 
+   *
    * Forces immediate flush of all buffered log entries to transports.
    * Useful for ensuring logs are sent before application shutdown.
-   * 
+   *
    * CHAINABLE API:
    * Returns this logger instance for method chaining.
-   * 
+   *
    * @returns {CoreLogger} this instance for chaining
-   * 
+   *
    * @example
    * logger.info('Starting shutdown').flush();
    */
@@ -392,15 +394,15 @@ export class CoreLogger {
 
   /**
    * Wait for the buffer to drain
-   * 
+   *
    * Returns a promise that resolves when the buffer has been fully drained
    * and all backpressure signals have been cleared.
-   * 
+   *
    * BACKPRESSURE HANDLING:
    * Useful for coordinating with the logging system when backpressure is active.
-   * 
+   *
    * @returns {Promise<void>} Resolves when buffer is drained
-   * 
+   *
    * @example
    * // Wait for buffer to drain before shutdown
    * await logger.drain();
@@ -418,17 +420,17 @@ export class CoreLogger {
 
   /**
    * Add a transport to the logger
-   * 
+   *
    * Registers a new transport for receiving log entries. The transport can be
    * console, file, HTTP, or any custom implementation.
-   * 
+   *
    * CHAINABLE API:
    * Returns this logger instance for method chaining.
-   * 
+   *
    * @param {Object} transport - Transport instance with write() method
    * @throws {LoggingError} If transport is not provided
    * @returns {CoreLogger} this instance for chaining
-   * 
+   *
    * @example
    * logger.addTransport(consoleTransport)
    *       .addTransport(fileTransport)
@@ -444,13 +446,13 @@ export class CoreLogger {
 
   /**
    * Remove a transport from the logger
-   * 
+   *
    * Unregisters a previously added transport. Log entries will no longer be
    * sent to this transport.
-   * 
+   *
    * CHAINABLE API:
    * Returns this logger instance for method chaining.
-   * 
+   *
    * @param {Object} transport - Transport instance to remove
    * @returns {CoreLogger} this instance for chaining
    */
@@ -468,22 +470,22 @@ export class CoreLogger {
 
   /**
    * Log with transform context information
-   * 
+   *
    * Logs a message with enriched context about a specific object including
    * its transform data, hierarchy level, and state information.
-   * 
+   *
    * CONTEXT ENRICHMENT:
    * - Includes object position, rotation, scale (if available)
    * - Adds object name and metadata
    * - Includes hierarchy information (parent, level)
    * - Timestamps the entry
-   * 
+   *
    * @param {number} level - Log level (LogLevel constant)
    * @param {string} objectId - Unique identifier of the object
    * @param {string} message - Log message content
    * @param {Object} [additionalData={}] - Additional metadata to include
    * @returns {boolean} true if logged successfully, false if rejected
-   * 
+   *
    * @example
    * // Log with context
    * logger.logWithContext(LogLevel.INFO, 'character-1', 'Transform updated', {
@@ -497,17 +499,15 @@ export class CoreLogger {
         return this.log(level, message, additionalData);
       }
 
-      
       const objectInfo = this.transformContext.get(objectId) || {};
       const hierarchyInfo = this.objectHierarchy.get(objectId) || {};
 
-      
       const metadata = {
         objectId,
         objectName: objectInfo.name,
         additionalData,
         hierarchy: hierarchyInfo,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       this.transformStats.contextLogs++;
@@ -521,7 +521,7 @@ export class CoreLogger {
 
   /**
    * Log debug message with context
-   * 
+   *
    * @param {string} objectId - Object identifier
    * @param {string} message - Debug message
    * @param {Object} [data] - Additional data
@@ -532,7 +532,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    * @returns {boolean}
    */
   infoWithContext(objectId, message, data) {
@@ -540,7 +540,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    * @returns {boolean}
    */
   warnWithContext(objectId, message, data) {
@@ -548,7 +548,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    * @returns {boolean}
    */
   errorWithContext(objectId, message, data) {
@@ -556,7 +556,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   batchLogWithContext(entries) {
     if (!Array.isArray(entries)) {
@@ -580,7 +580,7 @@ export class CoreLogger {
   // ═══════════════════════════════════════════════════════════════
 
   /**
-   * 
+   *
    */
   registerObject(objectId, transformData = {}, name = null, metadata = null) {
     try {
@@ -588,28 +588,25 @@ export class CoreLogger {
         throw new LoggingError('Object ID must be a non-empty string');
       }
 
-      
       this.transformContext.set(objectId, {
         id: objectId,
         name: name || objectId,
         transform: transformData,
         metadata: metadata || {},
-        registered: Date.now()
+        registered: Date.now(),
       });
 
-      
       this.objectHierarchy.set(objectId, {
         parent: null,
         children: [],
-        level: 0
+        level: 0,
       });
 
-      
       this.objectStates.set(objectId, {
         objectId,
         registered: Date.now(),
         lastUpdate: Date.now(),
-        logCount: 0
+        logCount: 0,
       });
 
       this.transformStats.transformUpdates++;
@@ -622,7 +619,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   updateTransform(objectId, transformData) {
     try {
@@ -634,7 +631,6 @@ export class CoreLogger {
       objectInfo.transform = transformData;
       objectInfo.updated = Date.now();
 
-      
       if (this.objectStates.has(objectId)) {
         const state = this.objectStates.get(objectId);
         state.lastUpdate = Date.now();
@@ -650,7 +646,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   setObjectParent(childId, parentId) {
     try {
@@ -665,24 +661,21 @@ export class CoreLogger {
           throw new LoggingError(`Parent object ${parentId} not registered`);
         }
 
-        
         if (childInfo.parent) {
           const oldParent = this.objectHierarchy.get(childInfo.parent);
           if (oldParent) {
-            oldParent.children = oldParent.children.filter(id => id !== childId);
+            oldParent.children = oldParent.children.filter((id) => id !== childId);
           }
         }
 
-        
         childInfo.parent = parentId;
         childInfo.level = parentInfo.level + 1;
         parentInfo.children.push(childId);
       } else {
-        
         if (childInfo.parent) {
           const oldParent = this.objectHierarchy.get(childInfo.parent);
           if (oldParent) {
-            oldParent.children = oldParent.children.filter(id => id !== childId);
+            oldParent.children = oldParent.children.filter((id) => id !== childId);
           }
         }
         childInfo.parent = null;
@@ -699,7 +692,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   getTransform(objectId) {
     try {
@@ -712,7 +705,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   getHierarchyInfo(objectId) {
     try {
@@ -726,7 +719,7 @@ export class CoreLogger {
         parent: hierarchyInfo.parent,
         children: [...hierarchyInfo.children],
         level: hierarchyInfo.level,
-        childrenCount: hierarchyInfo.children.length
+        childrenCount: hierarchyInfo.children.length,
       };
     } catch (error) {
       this.stats.errors++;
@@ -739,7 +732,7 @@ export class CoreLogger {
   // ═══════════════════════════════════════════════════════════════
 
   /**
-   * 
+   *
    * @returns {boolean}
    */
   setObjectState(objectId, state) {
@@ -751,7 +744,7 @@ export class CoreLogger {
       this.objectStates.set(objectId, {
         ...state,
         objectId,
-        lastUpdate: Date.now()
+        lastUpdate: Date.now(),
       });
 
       return true;
@@ -763,7 +756,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   getObjectState(objectId) {
     try {
@@ -776,7 +769,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   snapshotContext() {
     try {
@@ -785,13 +778,13 @@ export class CoreLogger {
         logger: {
           name: this.name,
           stats: { ...this.stats },
-          transformStats: { ...this.transformStats }
+          transformStats: { ...this.transformStats },
         },
         context: {
           objects: Object.fromEntries(this.transformContext),
           hierarchy: Object.fromEntries(this.objectHierarchy),
-          states: Object.fromEntries(this.objectStates)
-        }
+          states: Object.fromEntries(this.objectStates),
+        },
       };
 
       this.contextSnapshots.set(snapshot.timestamp, snapshot);
@@ -806,7 +799,7 @@ export class CoreLogger {
   }
 
   /**
-   * 
+   *
    */
   restoreFromSnapshot(snapshot) {
     try {
@@ -816,7 +809,6 @@ export class CoreLogger {
 
       const { objects, hierarchy, states } = snapshot.context;
 
-      
       this.transformContext.clear();
       if (objects) {
         for (const [id, obj] of Object.entries(objects)) {
@@ -824,7 +816,6 @@ export class CoreLogger {
         }
       }
 
-      
       this.objectHierarchy.clear();
       if (hierarchy) {
         for (const [id, hier] of Object.entries(hierarchy)) {
@@ -832,7 +823,6 @@ export class CoreLogger {
         }
       }
 
-      
       this.objectStates.clear();
       if (states) {
         for (const [id, state] of Object.entries(states)) {
@@ -853,7 +843,7 @@ export class CoreLogger {
   // ═══════════════════════════════════════════════════════════════
 
   /**
-   * 
+   *
    */
   getStatistics() {
     const bufferStats = this.buffer.getStatistics?.() || {};
@@ -862,7 +852,7 @@ export class CoreLogger {
     return {
       logger: {
         name: this.name,
-        ...this.stats
+        ...this.stats,
       },
       buffer: bufferStats,
       rateLimit: rateLimitStats,
@@ -870,14 +860,14 @@ export class CoreLogger {
       context: {
         objectsCount: this.transformContext.size,
         statesCount: this.objectStates.size,
-        snapshotsCount: this.contextSnapshots.size
+        snapshotsCount: this.contextSnapshots.size,
       },
-      transports: this.transports.length
+      transports: this.transports.length,
     };
   }
 
   /**
-   * 
+   *
    */
   getReport() {
     const stats = this.getStatistics();
@@ -889,29 +879,29 @@ export class CoreLogger {
       context: {
         objects: Array.from(this.transformContext.keys()),
         hierarchy: Array.from(this.objectHierarchy.entries()),
-        recentSnapshots: Array.from(this.contextSnapshots.values()).slice(-5)
+        recentSnapshots: Array.from(this.contextSnapshots.values()).slice(-5),
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
   /**
- * 
- */
+   *
+   */
   resetStats() {
     this.stats = {
       logged: 0,
       rejected: 0,
       flushed: 0,
       errors: 0,
-      rateLimited: 0
+      rateLimited: 0,
     };
 
     this.transformStats = {
       contextLogs: 0,
       transformUpdates: 0,
       hierarchyChanges: 0,
-      stateSnapshots: 0
+      stateSnapshots: 0,
     };
   }
 
@@ -920,9 +910,9 @@ export class CoreLogger {
   // ═══════════════════════════════════════════════════════════════
 
   /**
-   * 
+   *
    */
-  cleanupOldSnapshots(maxAge = 3600000) { 
+  cleanupOldSnapshots(maxAge = 3600000) {
     const now = Date.now();
     const toDelete = [];
 
@@ -940,31 +930,31 @@ export class CoreLogger {
   }
 
   /**
- * 
- */
+   *
+   */
   clearAll() {
     this.transformContext.clear();
     this.objectHierarchy.clear();
     this.objectStates.clear();
     this.contextSnapshots.clear();
-    
+
     this.transformStats = {
       contextLogs: 0,
       transformUpdates: 0,
       hierarchyChanges: 0,
-      stateSnapshots: 0
+      stateSnapshots: 0,
     };
   }
 
   /**
- * 
- */
+   *
+   */
   destroy() {
     this.flush();
     clearInterval(this.cleanupInterval);
     this.clearAll();
     this.transports = [];
-    
+
     if (this.buffer?.destroy) {
       this.buffer.destroy();
     }

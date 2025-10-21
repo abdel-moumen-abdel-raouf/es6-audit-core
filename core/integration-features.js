@@ -1,8 +1,8 @@
 ﻿/**
  * Integration of All Comprehensive Fixes
- * 
+ *
  * Ø±Ø¨Ø· Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù„ÙˆÙ„ Ù…Ø¹ Ø§Ù„Ù€ audit-core Ø§Ù„Ù…ÙˆØ¬ÙˆØ¯
- * 
+ *
  * Ø§Ù„Ù…Ù„ÙØ§Øª Ø§Ù„Ù…ØªØ£Ø«Ø±Ø©:
  * - http-transport.js
  * - enhanced-log-buffer.js
@@ -23,7 +23,7 @@ import {
   CircularReferenceDetector,
   StructuredLogSchema,
   ErrorPropagationPolicy,
-  ContextLeakPrevention
+  ContextLeakPrevention,
 } from './comprehensive-features.js';
 
 // ============================================
@@ -36,7 +36,7 @@ export class IntegratedHttpTransport {
     this.circuitBreaker = new CircuitBreaker({
       name: 'HttpTransport',
       failureThreshold: 5,
-      resetTimeout: 60000
+      resetTimeout: 60000,
     });
 
     // âœ… Data Loss Prevention
@@ -45,13 +45,13 @@ export class IntegratedHttpTransport {
     // âœ… Token Bucket Rate Limiter
     this.rateLimiter = new TokenBucketRateLimiter({
       capacity: config.capacity ?? 1000,
-      refillRate: config.refillRate ?? 100
+      refillRate: config.refillRate ?? 100,
     });
 
     // âœ… Memory Management
     this.memoryManager = new AdaptiveMemoryManager({
       onFlush: () => this.flush(),
-      onDrop: () => this.dropOldest()
+      onDrop: () => this.dropOldest(),
     });
 
     this.endpoint = config.endpoint;
@@ -64,7 +64,7 @@ export class IntegratedHttpTransport {
       sent: 0,
       failed: 0,
       dropped: 0,
-      rateLimited: 0
+      rateLimited: 0,
     };
   }
 
@@ -77,7 +77,9 @@ export class IntegratedHttpTransport {
     // âœ… Check rate limit
     const rateLimitResult = this.rateLimiter.canLog('default', entries.length);
     if (!rateLimitResult.allowed) {
-      console.warn(`[IntegratedHttpTransport] Rate limited - waiting ${rateLimitResult.waitTime}ms`);
+      console.warn(
+        `[IntegratedHttpTransport] Rate limited - waiting ${rateLimitResult.waitTime}ms`
+      );
       this.stats.rateLimited++;
       await this.rateLimiter.waitForToken('default', entries.length);
     }
@@ -108,7 +110,6 @@ export class IntegratedHttpTransport {
       // âœ… Only remove from queue after success
       this.queue.splice(0, batch.length);
       this.stats.sent += batch.length;
-
     } catch (error) {
       this.stats.failed++;
       console.error('[IntegratedHttpTransport] Send failed:', error.message);
@@ -124,9 +125,9 @@ export class IntegratedHttpTransport {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           logs: batch,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }),
-        signal: AbortSignal.timeout(this.timeout)
+        signal: AbortSignal.timeout(this.timeout),
       });
 
       if (!response.ok) {
@@ -134,11 +135,10 @@ export class IntegratedHttpTransport {
       }
 
       return response;
-
     } catch (error) {
       if (attempt < this.retries) {
         const delay = Math.pow(2, attempt) * 100;
-        await new Promise(r => setTimeout(r, delay));
+        await new Promise((r) => setTimeout(r, delay));
         return this._sendWithRetry(batch, attempt + 1);
       }
       throw error;
@@ -186,7 +186,7 @@ export class ThreadSafeEnhancedBuffer {
     this.stats = {
       written: 0,
       flushed: 0,
-      dropped: 0
+      dropped: 0,
     };
   }
 
@@ -247,13 +247,13 @@ export class EnhancedRateLimiterIntegrated {
     // âœ… Token Bucket instead of Fixed Window
     this.tokenBucket = new TokenBucketRateLimiter({
       capacity: config.maxPerSecond ?? 1000,
-      refillRate: config.maxPerSecond ?? 1000
+      refillRate: config.maxPerSecond ?? 1000,
     });
 
     this.stats = {
       checked: 0,
       allowed: 0,
-      rejected: 0
+      rejected: 0,
     };
   }
 
@@ -288,7 +288,7 @@ export class EnhancedSanitizerIntegrated {
     this.stats = {
       sanitized_entries: 0,
       circular_refs_found: 0,
-      security_issues_found: 0
+      security_issues_found: 0,
     };
   }
 
@@ -343,7 +343,7 @@ export class EnhancedLoggerFully {
     this.stats = {
       logged: 0,
       sanitized: 0,
-      dropped: 0
+      dropped: 0,
     };
   }
 
@@ -361,7 +361,7 @@ export class EnhancedLoggerFully {
       level,
       message,
       timestamp: Date.now(),
-      data: this.sanitizer.sanitize(data)
+      data: this.sanitizer.sanitize(data),
     };
 
     // âœ… Schema validation
@@ -383,7 +383,7 @@ export class EnhancedLoggerFully {
     this.stats.sanitized++;
 
     // âœ… Trigger flush if needed
-    if (await this.buffer.getSize() >= 50) {
+    if ((await this.buffer.getSize()) >= 50) {
       this._flushAsync();
     }
 
@@ -395,7 +395,7 @@ export class EnhancedLoggerFully {
    */
   _flushAsync() {
     setImmediate(() => {
-      this.buffer.flush().then(entries => {
+      this.buffer.flush().then((entries) => {
         if (entries.length > 0) {
           this.transport.write(entries);
         }
@@ -432,7 +432,7 @@ export class EnhancedLoggerFully {
       rateLimiter: this.rateLimiter.stats,
       sanitizer: this.sanitizer.stats,
       schema: this.schema.getStats(),
-      circuitBreaker: this.transport.circuitBreaker.getStatus()
+      circuitBreaker: this.transport.circuitBreaker.getStatus(),
     };
   }
 }
@@ -442,6 +442,5 @@ export default {
   ThreadSafeEnhancedBuffer,
   EnhancedRateLimiterIntegrated,
   EnhancedSanitizerIntegrated,
-  EnhancedLoggerFully
+  EnhancedLoggerFully,
 };
-

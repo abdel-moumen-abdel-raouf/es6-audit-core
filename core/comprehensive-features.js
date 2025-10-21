@@ -1,11 +1,11 @@
 ﻿/**
  * Comprehensive Fixes for All audit-core Weaknesses
- * 
+ *
  * Ø­Ù„ Ø¬Ø°Ø±ÙŠ ÙˆØ´Ø§Ù…Ù„ Ù„ÙƒÙ„ Ù†Ù‚Ø§Ø· Ø§Ù„Ø¶Ø¹Ù Ø§Ù„Ù€ 25 Ø§Ù„Ù…ÙˆØ«Ù‚Ø©
- * 
+ *
  * ÙŠØ´Ù…Ù„:
  * 1. âœ… HttpTransport Data Loss Prevention
- * 2. âœ… RateLimiter Token Bucket Algorithm  
+ * 2. âœ… RateLimiter Token Bucket Algorithm
  * 3. âœ… Enhanced Sanitizer for All Encodings
  * 4. âœ… Thread-Safety Guarantees
  * 5. âœ… Circuit Breaker Pattern
@@ -14,7 +14,7 @@
  * 8. âœ… Structured Logging Schema
  * 9. âœ… Error Propagation Policy
  * 10. âœ… Context Leak Prevention
- * 
+ *
  * Ø§Ù„Ø­Ø§Ù„Ø©: ðŸŸ¢ PRODUCTION READY
  */
 
@@ -35,16 +35,16 @@ export class DataLossPreventionTransport {
       batches_total: 0,
       batches_success: 0,
       batches_failed: 0,
-      batches_recovered: 0
+      batches_recovered: 0,
     };
   }
 
   write(entries) {
     if (!Array.isArray(entries)) entries = [entries];
-    
+
     // âœ… Ø£Ø¶Ù Ù„Ù„Ù€ queue Ù„Ù„Ù€ tracking
     this.queue.push(...entries);
-    
+
     // âœ… Call inner transport
     return this.innerTransport.write(entries);
   }
@@ -54,13 +54,13 @@ export class DataLossPreventionTransport {
    */
   async processBatchSafely(batch, processor) {
     const batchId = this._generateId();
-    
+
     try {
       // âœ… Ø®Ø·ÙˆØ© 1: Ø¶Ø¹ Ø§Ù„Ù€ batch ÙÙŠ pending Ù‚Ø¨Ù„ Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©
       this.pendingBatches.set(batchId, {
         batch,
         attempts: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       // âœ… Ø®Ø·ÙˆØ© 2: Ù…Ø¹Ø§Ù„Ø¬Ø©
@@ -69,23 +69,22 @@ export class DataLossPreventionTransport {
       // âœ… Ø®Ø·ÙˆØ© 3: ÙÙ‚Ø· Ø¨Ø¹Ø¯ Ø§Ù„Ù†Ø¬Ø§Ø­ØŒ Ø­Ø±Ù‘Ùƒ Ù…Ù† pending
       this.pendingBatches.delete(batchId);
       this.processedBatches.add(batchId);
-      
+
       this.stats.batches_success++;
       this.stats.batches_total++;
 
       return result;
-      
     } catch (error) {
       // âœ… ÙÙŠ Ø­Ø§Ù„Ø© Ø§Ù„Ø®Ø·Ø£ØŒ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ù…Ø§ Ø²Ø§Ù„Øª ÙÙŠ pending
       const pending = this.pendingBatches.get(batchId);
-      
+
       if (pending) {
         pending.attempts++;
         pending.lastError = error;
 
         // âœ… Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ø£Ù… Ø§Ù„ÙØ´Ù„ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ
         if (pending.attempts < 3) {
-          await new Promise(r => setTimeout(r, 1000 * pending.attempts));
+          await new Promise((r) => setTimeout(r, 1000 * pending.attempts));
           return this.processBatchSafely(batch, processor);
         }
       }
@@ -134,7 +133,7 @@ export class TokenBucketRateLimiter {
     this.stats = {
       requests_allowed: 0,
       requests_rejected: 0,
-      tokens_consumed: 0
+      tokens_consumed: 0,
     };
   }
 
@@ -143,7 +142,7 @@ export class TokenBucketRateLimiter {
    */
   canLog(key = 'default', tokens = 1) {
     const now = Date.now();
-    
+
     let bucket = this.buckets.get(key);
 
     if (!bucket) {
@@ -151,7 +150,7 @@ export class TokenBucketRateLimiter {
       bucket = {
         tokens: this.capacity,
         lastRefill: now,
-        totalRefilled: 0
+        totalRefilled: 0,
       };
       this.buckets.set(key, bucket);
     }
@@ -159,12 +158,9 @@ export class TokenBucketRateLimiter {
     // âœ… Ø­Ø³Ø§Ø¨ Ø¹Ø¯Ø¯ Ø§Ù„Ù€ tokens Ø§Ù„ØªÙŠ ØªÙ… Ø¥Ø¶Ø§ÙØªÙ‡Ø§
     const timePassed = (now - bucket.lastRefill) / 1000; // seconds
     const tokensToAdd = timePassed * this.refillRate;
-    
-    bucket.tokens = Math.min(
-      this.capacity,
-      bucket.tokens + tokensToAdd
-    );
-    
+
+    bucket.tokens = Math.min(this.capacity, bucket.tokens + tokensToAdd);
+
     bucket.lastRefill = now;
     bucket.totalRefilled += tokensToAdd;
 
@@ -181,11 +177,11 @@ export class TokenBucketRateLimiter {
     const waitTime = (tokensNeeded / this.refillRate) * 1000; // ms
 
     this.stats.requests_rejected++;
-    
+
     return {
       allowed: false,
       waitTime: Math.ceil(waitTime),
-      tokensNeeded: Math.ceil(tokensNeeded)
+      tokensNeeded: Math.ceil(tokensNeeded),
     };
   }
 
@@ -196,7 +192,7 @@ export class TokenBucketRateLimiter {
     let result = this.canLog(key, tokens);
 
     while (!result.allowed) {
-      await new Promise(r => setTimeout(r, result.waitTime));
+      await new Promise((r) => setTimeout(r, result.waitTime));
       result = this.canLog(key, tokens);
     }
 
@@ -206,7 +202,7 @@ export class TokenBucketRateLimiter {
   getStats() {
     return {
       ...this.stats,
-      bucketsCount: this.buckets.size
+      bucketsCount: this.buckets.size,
     };
   }
 }
@@ -221,21 +217,36 @@ export class EnhancedSanitizerAll {
    */
   constructor() {
     this.suspiciousPatterns = [
-      /password/i, /token/i, /secret/i, /api[_-]?key/i,
-      /auth/i, /credential/i, /bearer/i, /private[_-]?key/i,
-      /access[_-]?token/i, /refresh[_-]?token/i,
+      /password/i,
+      /token/i,
+      /secret/i,
+      /api[_-]?key/i,
+      /auth/i,
+      /credential/i,
+      /bearer/i,
+      /private[_-]?key/i,
+      /access[_-]?token/i,
+      /refresh[_-]?token/i,
       // Typosquatting
-      /passord/i, /pasword/i, /passwd/i,
-      /tokn/i, /secrt/i,
+      /passord/i,
+      /pasword/i,
+      /passwd/i,
+      /tokn/i,
+      /secrt/i,
       // Keys Ùˆ sensitive data
-      /ssh/i, /gpg/i, /key/i, /cert/i, /ssl/i, /tls/i
+      /ssh/i,
+      /gpg/i,
+      /key/i,
+      /cert/i,
+      /ssl/i,
+      /tls/i,
     ];
 
     this.encodingPatterns = {
       base64: /^[A-Za-z0-9+/]*={0,2}$/,
       hex: /^[0-9a-fA-F]+$/,
       url: /%[0-9A-Fa-f]{2}/,
-      unicode: /\\u[0-9A-Fa-f]{4}/
+      unicode: /\\u[0-9A-Fa-f]{4}/,
     };
 
     this.stats = {
@@ -244,7 +255,7 @@ export class EnhancedSanitizerAll {
       url_detected: 0,
       hex_detected: 0,
       nested_detected: 0,
-      circular_detected: 0
+      circular_detected: 0,
     };
   }
 
@@ -267,9 +278,9 @@ export class EnhancedSanitizerAll {
 
     if (typeof data === 'object') {
       if (data === null) return null;
-      
+
       if (Array.isArray(data)) {
-        return data.map(item => this.sanitize(item, maxDepth - 1));
+        return data.map((item) => this.sanitize(item, maxDepth - 1));
       }
 
       // âœ… Object recursion Ù…Ø¹ ÙƒØ´Ù nested sensitive
@@ -336,9 +347,9 @@ export class EnhancedSanitizerAll {
     try {
       // âœ… ÙØ­Øµ Ø£ÙˆÙ„ÙŠ: Ù‡Ù„ ÙŠØ¨Ø¯Ùˆ ÙƒÙ€ base64ØŸ
       if (str.length % 4 !== 0 && !str.endsWith('=')) return str;
-      
+
       const decoded = Buffer.from(str, 'base64').toString('utf-8');
-      
+
       // âœ… ØªØ­Ù‚Ù‚ Ù…Ù† Ø£Ù† Ø§Ù„Ù…Ø®Ø±Ø¬ ØµØ­ÙŠØ­ (Ù„Ø§ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ null bytes)
       if (decoded.length > 0 && !decoded.includes('\x00')) {
         return decoded;
@@ -368,7 +379,7 @@ export class EnhancedSanitizerAll {
   _tryDecodeHex(str) {
     try {
       if (!this.encodingPatterns.hex.test(str)) return str;
-      
+
       const decoded = Buffer.from(str, 'hex').toString('utf-8');
       if (decoded.length > 0) return decoded;
     } catch (e) {
@@ -390,7 +401,8 @@ export class EnhancedSanitizerAll {
     }
 
     // âœ… ÙØ­Øµ Ø§Ù„Ø£Ø±Ù‚Ø§Ù… ÙˆØ§Ù„Ø±Ù…ÙˆØ² (Ù‚Ø¯ ØªÙƒÙˆÙ† Ù…Ø´ÙØ±Ø©)
-    if (/[0-9a-f]{32,}/.test(content)) { // MD5/SHA1/SHA256 pattern
+    if (/[0-9a-f]{32,}/.test(content)) {
+      // MD5/SHA1/SHA256 pattern
       return true;
     }
 
@@ -456,7 +468,7 @@ export class Mutex {
     }
 
     // Ø§Ù†ØªØ¸Ø±
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       this.waitQueue.push(resolve);
     });
 
@@ -536,7 +548,7 @@ export class ReadWriteLock {
     await this.mutex.lock();
     try {
       while (this.writeWaiting) {
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise((r) => setTimeout(r, 10));
       }
       this.readCount++;
     } finally {
@@ -558,7 +570,7 @@ export class ReadWriteLock {
     try {
       this.writeWaiting = true;
       while (this.readCount > 0) {
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise((r) => setTimeout(r, 10));
       }
     } finally {
       this.mutex.unlock();
@@ -616,7 +628,7 @@ export class CircuitBreaker {
       requests_total: 0,
       requests_failed: 0,
       circuit_opens: 0,
-      circuit_resets: 0
+      circuit_resets: 0,
     };
   }
 
@@ -652,7 +664,6 @@ export class CircuitBreaker {
       }
 
       return result;
-
     } catch (error) {
       this.stats.requests_failed++;
 
@@ -696,7 +707,7 @@ export class CircuitBreaker {
       failureCount: this.failureCount,
       successCount: this.successCount,
       lastFailureTime: this.lastFailureTime,
-      stats: this.stats
+      stats: this.stats,
     };
   }
 }
@@ -721,7 +732,7 @@ export class AdaptiveMemoryManager {
       flushes: 0,
       dropped_items: 0,
       memory_warnings: 0,
-      memory_critical: 0
+      memory_critical: 0,
     };
 
     this._startMonitoring();
@@ -770,7 +781,7 @@ export class AdaptiveMemoryManager {
    */
   _handleHighPressure() {
     console.warn('[AdaptiveMemoryManager] High memory pressure - flushing buffers');
-    
+
     if (this.flushCallback) {
       try {
         this.flushCallback('high_pressure');
@@ -786,7 +797,7 @@ export class AdaptiveMemoryManager {
    */
   _handleCritical() {
     console.error('[AdaptiveMemoryManager] CRITICAL memory pressure - dropping buffered items');
-    
+
     // âœ… ÙÙ„Ø´ ÙÙˆØ±ÙŠ
     if (this.flushCallback) {
       try {
@@ -836,7 +847,7 @@ export class CircularReferenceDetector {
     this.stats = {
       circular_detected: 0,
       safe_serialized: 0,
-      replaced: 0
+      replaced: 0,
     };
   }
 
@@ -870,7 +881,7 @@ export class CircularReferenceDetector {
    */
   breakCircular(obj, seen = new WeakSet(), maxDepth = 10) {
     if (maxDepth <= 0) return '[MAX_DEPTH]';
-    
+
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
@@ -883,7 +894,7 @@ export class CircularReferenceDetector {
     seen.add(obj);
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.breakCircular(item, seen, maxDepth - 1));
+      return obj.map((item) => this.breakCircular(item, seen, maxDepth - 1));
     }
 
     const result = {};
@@ -945,13 +956,13 @@ export class StructuredLogSchema {
       duration: { type: 'number', required: false },
       error: { type: 'object', required: false },
       context: { type: 'object', required: false },
-      ...schemaDefinition
+      ...schemaDefinition,
     };
 
     this.stats = {
       validated: 0,
       valid: 0,
-      invalid: 0
+      invalid: 0,
     };
   }
 
@@ -996,7 +1007,7 @@ export class StructuredLogSchema {
    */
   enforceSchema(entry) {
     const validation = this.validate(entry);
-    
+
     if (!validation.valid) {
       throw new Error(`Schema validation failed: ${validation.errors.join(', ')}`);
     }
@@ -1019,17 +1030,17 @@ export class ErrorPropagationPolicy {
    */
   constructor(config = {}) {
     this.policies = {
-      CRITICAL: { propagate: true, log: true, alert: true },  // error, fatal
-      MAJOR: { propagate: true, log: true, alert: false },     // warn
-      MINOR: { propagate: false, log: true, alert: false },    // info, debug
-      ...config
+      CRITICAL: { propagate: true, log: true, alert: true }, // error, fatal
+      MAJOR: { propagate: true, log: true, alert: false }, // warn
+      MINOR: { propagate: false, log: true, alert: false }, // info, debug
+      ...config,
     };
 
     this.stats = {
       errors_propagated: 0,
       errors_suppressed: 0,
       errors_logged: 0,
-      errors_alerted: 0
+      errors_alerted: 0,
     };
   }
 
@@ -1100,7 +1111,7 @@ export class ContextLeakPrevention {
     this.stats = {
       contexts_created: 0,
       contexts_destroyed: 0,
-      leaks_prevented: 0
+      leaks_prevented: 0,
     };
   }
 
@@ -1113,7 +1124,7 @@ export class ContextLeakPrevention {
       data,
       createdAt: Date.now(),
       parent: null,
-      children: new Set()
+      children: new Set(),
     };
 
     const token = {}; // Dummy object for WeakMap
@@ -1123,9 +1134,12 @@ export class ContextLeakPrevention {
     this.stats.contexts_created++;
 
     // âœ… Auto-cleanup Ø¨Ø¹Ø¯ timeout
-    setTimeout(() => {
-      this._cleanupContext(context);
-    }, 5 * 60 * 1000); // 5 minutes
+    setTimeout(
+      () => {
+        this._cleanupContext(context);
+      },
+      5 * 60 * 1000
+    ); // 5 minutes
 
     return { token, context };
   }
@@ -1179,7 +1193,7 @@ export class ContextLeakPrevention {
   getStats() {
     return {
       ...this.stats,
-      activeCount: this.activeContexts.size
+      activeCount: this.activeContexts.size,
     };
   }
 }
@@ -1196,6 +1210,5 @@ export default {
   CircularReferenceDetector,
   StructuredLogSchema,
   ErrorPropagationPolicy,
-  ContextLeakPrevention
+  ContextLeakPrevention,
 };
-

@@ -1,6 +1,6 @@
 /**
  * Stack Trace Extractor and Parser
- * 
+ *
  * Captures and parses stack traces for better error diagnostics.
  * Provides source location information (file, line, column).
  */
@@ -50,7 +50,7 @@ class StackFrame {
       lineNumber: this.lineNumber,
       columnNumber: this.columnNumber,
       isNative: this.isNative,
-      location: this.getLocation()
+      location: this.getLocation(),
     };
   }
 }
@@ -101,7 +101,7 @@ class StackTraceExtractor {
     return {
       fileName: caller.fileName,
       lineNumber: caller.lineNumber,
-      columnNumber: caller.columnNumber
+      columnNumber: caller.columnNumber,
     };
   }
 
@@ -114,10 +114,8 @@ class StackTraceExtractor {
   static format(error = null, maxFrames = 10) {
     const frames = this.extract(error, 1);
     const limited = frames.slice(0, maxFrames);
-    
-    return limited
-      .map((frame, index) => `  at ${frame.toString()}`)
-      .join('\n');
+
+    return limited.map((frame, index) => `  at ${frame.toString()}`).join('\n');
   }
 
   /**
@@ -225,7 +223,7 @@ class ErrorContext {
   getFormattedStack(maxFrames = 5) {
     return this.stack
       .slice(0, maxFrames)
-      .map(frame => `  at ${frame.toString()}`)
+      .map((frame) => `  at ${frame.toString()}`)
       .join('\n');
   }
 
@@ -240,7 +238,7 @@ class ErrorContext {
       code: this.code,
       location: this.getLocation(),
       timestamp: this.timestamp,
-      stack: this.stack.slice(0, 10).map(f => f.toJSON())
+      stack: this.stack.slice(0, 10).map((f) => f.toJSON()),
     };
   }
 

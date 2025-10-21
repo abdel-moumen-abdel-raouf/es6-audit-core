@@ -4,78 +4,78 @@
  */
 
 export class BatchQueue {
-    constructor(config = {}) {
-        this.maxSize = config.maxSize || 50;
-        this.maxMemory = config.maxMemory || 50 * 1024 * 1024; // 50 MB
-        
-        this.queue = [];
-        this.totalSize = 0;
+  constructor(config = {}) {
+    this.maxSize = config.maxSize || 50;
+    this.maxMemory = config.maxMemory || 50 * 1024 * 1024; // 50 MB
+
+    this.queue = [];
+    this.totalSize = 0;
+  }
+
+  /**
+   * Add entry to queue
+   */
+  enqueue(entry) {
+    // Check size limits
+    if (this.queue.length >= this.maxSize) {
+      throw new Error('Queue is full: reached maxSize limit');
     }
 
-    /**
-     * Add entry to queue
-     */
-    enqueue(entry) {
-        // Check size limits
-        if (this.queue.length >= this.maxSize) {
-            throw new Error('Queue is full: reached maxSize limit');
-        }
-
-        const entrySize = JSON.stringify(entry).length;
-        if (this.totalSize + entrySize > this.maxMemory) {
-            throw new Error('Queue is full: reached memory limit');
-        }
-
-        this.queue.push(entry);
-        this.totalSize += entrySize;
-
-        return true;
+    const entrySize = JSON.stringify(entry).length;
+    if (this.totalSize + entrySize > this.maxMemory) {
+      throw new Error('Queue is full: reached memory limit');
     }
 
-    /**
-     * Remove and return entries from queue
-     */
-    dequeue(count) {
-        const removed = this.queue.splice(0, count);
-        
-        // Update total size
-        for (const entry of removed) {
-            this.totalSize -= JSON.stringify(entry).length;
-        }
+    this.queue.push(entry);
+    this.totalSize += entrySize;
 
-        return removed;
+    return true;
+  }
+
+  /**
+   * Remove and return entries from queue
+   */
+  dequeue(count) {
+    const removed = this.queue.splice(0, count);
+
+    // Update total size
+    for (const entry of removed) {
+      this.totalSize -= JSON.stringify(entry).length;
     }
 
-    /**
-     * View entries without removing them
-     */
-    peek(count) {
-        return this.queue.slice(0, count);
-    }
+    return removed;
+  }
 
-    /**
-     * Check if queue is empty
-     */
-    isEmpty() {
-        return this.queue.length === 0;
-    }
+  /**
+   * View entries without removing them
+   */
+  peek(count) {
+    return this.queue.slice(0, count);
+  }
 
-    /**
-     * Get current size info
-     */
-    getSize() {
-        return {
-            entries: this.queue.length,
-            bytes: this.totalSize,
-            megabytes: (this.totalSize / 1024 / 1024).toFixed(2)
-        };
-    }
+  /**
+   * Check if queue is empty
+   */
+  isEmpty() {
+    return this.queue.length === 0;
+  }
 
-    /**
-     * Clear entire queue
-     */
-    clear() {
-        this.queue = [];
-        this.totalSize = 0;
-    }
+  /**
+   * Get current size info
+   */
+  getSize() {
+    return {
+      entries: this.queue.length,
+      bytes: this.totalSize,
+      megabytes: (this.totalSize / 1024 / 1024).toFixed(2),
+    };
+  }
+
+  /**
+   * Clear entire queue
+   */
+  clear() {
+    this.queue = [];
+    this.totalSize = 0;
+  }
 }

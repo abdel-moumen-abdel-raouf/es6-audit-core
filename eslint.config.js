@@ -24,8 +24,8 @@ export default [
       'transports/database-transport.js',
       'transports/http-transport-queue.js',
       'transports/http-transport-persistent.js',
-      'internal/**'
-    ]
+      'internal/**',
+    ],
   },
   {
     files: [
@@ -38,24 +38,24 @@ export default [
       'sanitizer/**/*.js',
       'sync/**/*.js',
       'transports/{console-transport.js,file-transport.js,http-transport.js,log-buffer.js,adaptive-log-buffer.js}',
-      'utils/{types.js,log-entry.js}'
+      'utils/{types.js,log-entry.js}',
     ],
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: 'module',
       globals: {
         ...globals.es2024,
-        ...globals.node
-      }
+        ...globals.node,
+      },
     },
     plugins: {
-      prettier: pluginPrettier
+      prettier: pluginPrettier,
     },
     rules: {
       'prettier/prettier': 'warn',
       'no-console': 'off',
       'no-unused-vars': 'warn',
-      'no-undef': 'off'
-    }
-  }
+      'no-undef': 'off',
+    },
+  },
 ];

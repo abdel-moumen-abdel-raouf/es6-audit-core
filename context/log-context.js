@@ -1,6 +1,6 @@
 /**
  * Log Context Manager
- * 
+ *
  * Manages correlation IDs and request contexts for tracking log chains.
  * Uses async-local-storage pattern for thread-safe context tracking.
  */
@@ -109,7 +109,7 @@ class LogContext {
     const context = {
       correlationId: id,
       createdAt: new Date().toISOString(),
-      requestContext: null
+      requestContext: null,
     };
 
     this.#store.setGlobalContext(context);
@@ -164,10 +164,12 @@ class LogContext {
    * @returns {object} Complete context object
    */
   static getContext() {
-    return this.#store.getContext() || {
-      correlationId: this.#currentId,
-      requestContext: this.#requestContext
-    };
+    return (
+      this.#store.getContext() || {
+        correlationId: this.#currentId,
+        requestContext: this.#requestContext,
+      }
+    );
   }
 
   /**
@@ -181,7 +183,7 @@ class LogContext {
     const context = {
       correlationId: id,
       createdAt: new Date().toISOString(),
-      requestContext: this.#requestContext
+      requestContext: this.#requestContext,
     };
 
     return this.#store.runWithContext(context, callback);
@@ -204,7 +206,7 @@ class LogContext {
     return {
       correlationId: this.getCorrelationId(),
       requestContext: this.getRequestContext(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

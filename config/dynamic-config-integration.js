@@ -1,13 +1,13 @@
 /**
  * Dynamic Configuration Auto-Integration
- * 
+ *
  * Automatic runtime configuration management with support for:
  * - Runtime config updates
  * - Rollback mechanism
  * - Change tracking
  * - Validation
  * - Zero-downtime updates
- * 
+ *
  * @module DynamicConfigIntegration
  * @version 1.0.0
  */
@@ -17,12 +17,12 @@ import { DynamicConfigurationManager } from './dynamic-config.js';
 export class DynamicConfigIntegration {
   static #manager = null;
   static #enabled = false;
-  static #history = []; 
+  static #history = [];
   static #maxHistorySize = 50;
 
   /**
- * 
- */
+   *
+   */
   static enable(config = {}) {
     if (this.#enabled) {
       return this.#manager;
@@ -31,7 +31,7 @@ export class DynamicConfigIntegration {
     this.#manager = new DynamicConfigurationManager({
       logLevel: config.defaultLogLevel ?? 'INFO',
       storage: config.storage,
-      logger: config.logger || null
+      logger: config.logger || null,
     });
 
     this.#enabled = true;
@@ -42,35 +42,31 @@ export class DynamicConfigIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static setModuleLogLevel(moduleName, level, duration = null) {
     if (!this.#enabled || !this.#manager) {
       throw new Error('Dynamic config not enabled');
     }
 
-    
     const configKey = `moduleLogLevels.${moduleName}`;
     const previous = this.#manager.getConfig(configKey);
-    
+
     this._recordChange({
       type: 'setModuleLogLevel',
       module: moduleName,
       level,
       duration,
       previous,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
-    
     try {
       this.#manager.updateConfig(configKey, level);
     } catch (e) {
-      
       this.#manager.setConfig({ [`moduleLogLevels.${moduleName}`]: level });
     }
 
-    
     if (duration) {
       setTimeout(() => {
         this.rollbackChange(moduleName);
@@ -82,13 +78,13 @@ export class DynamicConfigIntegration {
       module: moduleName,
       level,
       previous,
-      duration
+      duration,
     };
   }
 
   /**
- * 
- */
+   *
+   */
   static getModuleLogLevel(moduleName) {
     if (!this.#enabled || !this.#manager) {
       return 'INFO'; // default
@@ -101,8 +97,8 @@ export class DynamicConfigIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static setGlobalLogLevel(level) {
     if (!this.#enabled || !this.#manager) {
       throw new Error('Dynamic config not enabled');
@@ -114,7 +110,7 @@ export class DynamicConfigIntegration {
       type: 'setGlobalLogLevel',
       level,
       previous,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     try {
@@ -126,13 +122,13 @@ export class DynamicConfigIntegration {
     return {
       success: true,
       level,
-      previous
+      previous,
     };
   }
 
   /**
- * 
- */
+   *
+   */
   static getConfig() {
     if (!this.#enabled || !this.#manager) {
       return { logLevel: 'INFO' };
@@ -145,8 +141,8 @@ export class DynamicConfigIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static setRateLimit(moduleName, tokensPerSecond) {
     if (!this.#enabled || !this.#manager) {
       throw new Error('Dynamic config not enabled');
@@ -160,7 +156,7 @@ export class DynamicConfigIntegration {
       module: moduleName,
       tokensPerSecond,
       previous,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     try {
@@ -173,13 +169,13 @@ export class DynamicConfigIntegration {
       success: true,
       module: moduleName,
       tokensPerSecond,
-      previous
+      previous,
     };
   }
 
   /**
- * 
- */
+   *
+   */
   static getModuleConfig(moduleName) {
     if (!this.#enabled || !this.#manager) {
       return {};
@@ -189,7 +185,7 @@ export class DynamicConfigIntegration {
       const rateLimit = this.#manager.getConfig(`moduleRateLimits.${moduleName}`);
       return {
         logLevel,
-        rateLimitTPS: rateLimit
+        rateLimitTPS: rateLimit,
       };
     } catch {
       return {};
@@ -197,8 +193,8 @@ export class DynamicConfigIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static setSampleRate(moduleName, sampleRate) {
     if (!this.#enabled || !this.#manager) {
       throw new Error('Dynamic config not enabled');
@@ -216,7 +212,7 @@ export class DynamicConfigIntegration {
       module: moduleName,
       sampleRate,
       previous,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     try {
@@ -229,21 +225,20 @@ export class DynamicConfigIntegration {
       success: true,
       module: moduleName,
       sampleRate,
-      previous
+      previous,
     };
   }
 
   /**
- * 
- */
+   *
+   */
   static rollbackChange(identifier) {
     if (!this.#enabled || !this.#manager) {
       throw new Error('Dynamic config not enabled');
     }
 
-    
-    const changeIndex = this.#history.findIndex(ch => 
-      ch.module === identifier || ch.type.includes(identifier)
+    const changeIndex = this.#history.findIndex(
+      (ch) => ch.module === identifier || ch.type.includes(identifier)
     );
 
     if (changeIndex === -1) {
@@ -253,10 +248,9 @@ export class DynamicConfigIntegration {
     const change = this.#history[changeIndex];
     const result = {
       success: true,
-      rolledBack: change
+      rolledBack: change,
     };
 
-    
     try {
       if (change.type === 'setModuleLogLevel') {
         const configKey = `moduleLogLevels.${change.module}`;
@@ -279,22 +273,21 @@ export class DynamicConfigIntegration {
       result.message = `Rollback attempted but may have failed: ${e.message}`;
     }
 
-    
     this.#history.splice(changeIndex, 1);
 
     return result;
   }
 
   /**
- * 
- */
+   *
+   */
   static getAllChanges() {
     return [...this.#history];
   }
 
   /**
- * 
- */
+   *
+   */
   static getCurrentConfig() {
     if (!this.#enabled || !this.#manager) {
       return null;
@@ -304,32 +297,29 @@ export class DynamicConfigIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static _recordChange(change) {
     this.#history.push(change);
 
-    
     if (this.#history.length > this.#maxHistorySize) {
       this.#history.shift();
     }
   }
 
   /**
- * 
- */
+   *
+   */
   static patchEnhancedLogger(EnhancedLoggerClass) {
     const originalConstructor = EnhancedLoggerClass.prototype.constructor;
 
-    EnhancedLoggerClass.prototype.constructor = function(moduleName, config) {
-      
+    EnhancedLoggerClass.prototype.constructor = function (moduleName, config) {
       originalConstructor.call(this, moduleName, config);
 
-      
       if (config.dynamicConfig) {
         DynamicConfigIntegration.enable({
           defaultLogLevel: config.globalConfig?.logLevel || 'INFO',
-          logger: config.logger || null
+          logger: config.logger || null,
         });
 
         this.dynamicConfig = true;
@@ -340,21 +330,18 @@ export class DynamicConfigIntegration {
   }
 
   /**
- * 
- */
+   *
+   */
   static createEndpoint() {
     return {
-      
       getConfig: () => {
         return DynamicConfigIntegration.getCurrentConfig();
       },
 
-      
       getModuleConfig: (moduleName) => {
         return DynamicConfigIntegration.getModuleConfig(moduleName);
       },
 
-      
       updateConfig: (updates) => {
         const results = [];
 
@@ -373,27 +360,25 @@ export class DynamicConfigIntegration {
         return results;
       },
 
-      
       rollback: (identifier) => {
         return DynamicConfigIntegration.rollbackChange(identifier);
       },
 
-      
       getChanges: () => {
         return DynamicConfigIntegration.getChanges();
-      }
+      },
     };
   }
 
   /**
- * 
- */
+   *
+   */
   static getStats() {
     return {
       enabled: this.#enabled,
       changesCount: this.#history.length,
       changes: this.#history,
-      currentConfig: this.#manager?.getConfig()
+      currentConfig: this.#manager?.getConfig(),
     };
   }
 }

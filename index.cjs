@@ -2,9 +2,9 @@
 // CommonJS compatibility shim for logging-lib.
 //
 // This file documents the dual-export pattern used in svg-character-engine.
-// 
+//
 // TECHNICAL NOTE ON ES6/CommonJS INTEROP:
-// 
+//
 // Node.js has inherent limitations when mixing ES6 modules and CommonJS:
 // 1. You cannot require() an ES6 module directly
 // 2. You cannot use import.meta in a .cjs file

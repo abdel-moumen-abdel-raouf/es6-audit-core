@@ -4,16 +4,15 @@ A high-performance, security-conscious logging and audit core for modern Node.js
 
 Current version: 1.0.0
 
-
 ## Overview / Introduction
 
 AuditCore provides a modular, enterprise-ready logging and audit foundation designed for services that need reliable, scalable, and secure log delivery. It supports multiple transports (console, file, HTTP, custom), protects sensitive data through robust sanitization, and maintains performance via adaptive buffering and rate limiting. It also includes health checks, metrics, and tracing utilities for operational visibility.
 
 Target users:
+
 - Backend services and microservices with high-volume logging needs
 - Platforms that require consistent sanitization and governance for logs
 - Teams operating in production with SLOs who need resilience and observability
-
 
 ## Key Features
 
@@ -31,7 +30,6 @@ Target users:
 - Synchronization utilities (Mutex) for safe concurrency
 - Worker thread integration scaffolding (pool and integrations)
 - ES Modules-first; Node.js >= 14
-
 
 ## Architecture & Design Overview
 
@@ -58,7 +56,6 @@ Target users:
   - Entry is pushed into AdaptiveLogBuffer
   - On flush, batched entries are sent to configured transports (requires a batch-capable transport interface; see “Transports” note below)
   - Statistics updated; backpressure and drain events managed
-
 
 ## Folder Structure & File Summary
 
@@ -130,10 +127,10 @@ Key directories:
 - `workers/`
   - Worker thread integration stubs/pool
 
-
 ## Installation & Setup
 
 Requirements:
+
 - Node.js >= 14
 - Native ES Modules environment (package.json uses `"type": "module"`)
 
@@ -158,8 +155,10 @@ import { CoreLogger, LogLevel } from '@svg-character-engine/audit-core';
 ```
 
 CommonJS usage:
+
 - Node cannot require() native ES Modules directly.
 - Prefer dynamic import() in CJS:
+
 ```js
 (async () => {
   const { CoreLogger } = await import('@svg-character-engine/audit-core');
@@ -168,14 +167,12 @@ CommonJS usage:
 })();
 ```
 
-
 ## Quick Start Guide
 
 Important async note:
 
 - `logger.log/debug/info/warn/error` are async and resolve to a boolean. Prefer `await` to handle backpressure outcomes properly.
 - `flush()` and `drain()` are async and should be awaited before shutdown.
-
 
 Transports and batching: CoreLogger flushes a batch of entries. Built-in `ConsoleTransport` and `HttpTransport` already provide `write(entries)` for batched delivery. If you use a custom transport that only implements per-entry `log(entry)`, either add a `write(entries)` method or wrap it in a small adapter.
 
@@ -189,14 +186,14 @@ const logger = new CoreLogger({
     maxSize: 1000,
     flushInterval: 1000,
     highWaterMark: 0.8,
-    lowWaterMark: 0.5
+    lowWaterMark: 0.5,
   },
   rateLimiter: { tokensPerSecond: 1000, burstCapacity: 2000 },
   // Optional unified error hook for internal logging errors
   onError: (err) => {
     // You can forward to your monitoring here
     // console.warn('Logger internal error:', err);
-  }
+  },
 });
 
 await logger.info('Application started', { env: process.env.NODE_ENV });
@@ -209,7 +206,6 @@ To try locally, save the snippet as `quick-start.mjs` and run:
 ```powershell
 node .\quick-start.mjs
 ```
-
 
 ## Configuration
 
@@ -257,7 +253,6 @@ node .\quick-start.mjs
   - `HttpTransport` — advanced HTTP transport (alias of `AdvancedHttpTransport`) with retry/backoff and DLQ; supports `log(entry)` and `write(entries)`
   - For custom transports that lack `write(entries)`, add it or wrap them with a simple adapter
 
-
 ## Usage Examples
 
 - File transport (Node-only) with adapter:
@@ -278,7 +273,7 @@ class FileBatchAdapter {
 
 const logger = new CoreLogger({
   name: 'billing',
-  transports: [new FileBatchAdapter('./logs')]
+  transports: [new FileBatchAdapter('./logs')],
 });
 
 logger.warn('High latency on payment gateway', { provider: 'stripe', latencyMs: 450 });
@@ -302,7 +297,7 @@ class HttpBatchAdapter {
 
 const logger = new CoreLogger({
   name: 'api',
-  transports: [new HttpBatchAdapter('https://logs.example.com/ingest', { maxRetries: 5 })]
+  transports: [new HttpBatchAdapter('https://logs.example.com/ingest', { maxRetries: 5 })],
 });
 
 logger.error('Upstream service returned 503', { service: 'inventory', attempt: 3 });
@@ -354,7 +349,6 @@ console.log(metrics.exportAsPrometheus());
 ```
 
 Note: Health and Metrics are present in the repository but are not exported via the root `index.js`. If you consume this as a published package, these modules are not part of the public API unless exported.
-
 
 ## API Reference
 
@@ -422,7 +416,6 @@ The following summarizes the public exports and their stability. Items marked Ex
   - Workers & Tracing: `WorkerThreadPool`, `WorkerThreadIntegration`, `LoggerWorkerIntegration`, `DistributedTracing`, `DistributedTracingIntegration`
   - Utilities: `StackTrace`, `LogFormatter`, `ModulePatternMatcher`, `OutputCustomizer`, `MemorySafeContext`, `SupportSystems`
 
-
 Testing & Development
 
 - Tests: see `tests/basic.test.js`. Run them with `npm test` (package.json defines the script).
@@ -433,7 +426,6 @@ Testing & Development
   - Create a small script using the Quick Start example and run with Node.
   - Validate transports by checking console output and/or created log files.
 - Lint/Typecheck: not configured; you can add ESLint/TypeScript as needed for your environment.
-
 
 ## Deployment
 
@@ -452,7 +444,6 @@ Testing & Development
   - Keep sanitization enabled on untrusted inputs
   - Monitor health and metrics by exposing outputs from `HealthCheckManager` and `MetricsCollector` where applicable
 
-
 ## Contributing
 
 - Use ES Modules and keep modules cohesive within their domain folder
@@ -461,11 +452,9 @@ Testing & Development
 - For public APIs, update this README and add inline JSDoc
 - Submit pull requests with a clear description and reproduction steps when fixing bugs
 
-
 ## License
 
 No license is declared in the repository. Before using this software in production, please consult the repository owner to confirm licensing terms and add a LICENSE file.
-
 
 ## Contact & Support
 
@@ -474,8 +463,6 @@ For issues and feature requests, please open a GitHub issue in this repository. 
 - Node.js version and environment
 - Minimal reproduction (code snippets)
 - Logs or error messages (sanitized)
-
-
 
 ## Changelog / Version Info
 

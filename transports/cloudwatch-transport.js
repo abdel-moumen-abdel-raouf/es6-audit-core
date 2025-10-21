@@ -1,6 +1,6 @@
 /**
  * CloudWatch Transport for AWS logging
- * 
+ *
  * - Batch processing
  * - Error handling و retry logic
  * - Statistics tracking
@@ -8,7 +8,6 @@
 
 export class CloudWatchTransport {
   constructor(config = {}) {
-    
     this.logGroupName = config.logGroupName;
     this.logStreamName = config.logStreamName;
     this.client = config.client; // AWS CloudWatch Logs client
@@ -35,14 +34,12 @@ export class CloudWatchTransport {
     this.onSuccess = config.onSuccess;
     this.onError = config.onError;
 
-    
     this.queue = [];
     this.processing = false;
     this.batchTimer = null;
     this.sequenceToken = null;
     this.initialized = false;
 
-    
     this.stats = {
       sent: 0,
       failed: 0,
@@ -50,37 +47,33 @@ export class CloudWatchTransport {
       events: 0,
       lastSentAt: null,
       lastErrorAt: null,
-      lastError: null
+      lastError: null,
     };
 
-    
     this._initialize();
   }
 
   /**
- * 
- */
+   *
+   */
   async _initialize() {
     try {
-      
       try {
         await this.client.describeLogGroups({
-          logGroupNamePrefix: this.logGroupName
+          logGroupNamePrefix: this.logGroupName,
         });
       } catch (e) {
         if (e.code === 'ResourceNotFoundException') {
-          
           await this.client.createLogGroup({
-            logGroupName: this.logGroupName
+            logGroupName: this.logGroupName,
           });
         }
       }
 
-      
       try {
         const response = await this.client.describeLogStreams({
           logGroupName: this.logGroupName,
-          logStreamNamePrefix: this.logStreamName
+          logStreamNamePrefix: this.logStreamName,
         });
 
         if (response.logStreams && response.logStreams.length > 0) {
@@ -88,10 +81,9 @@ export class CloudWatchTransport {
         }
       } catch (e) {
         if (e.code === 'ResourceNotFoundException') {
-          
           await this.client.createLogStream({
             logGroupName: this.logGroupName,
-            logStreamName: this.logStreamName
+            logStreamName: this.logStreamName,
           });
         }
       }
@@ -104,42 +96,36 @@ export class CloudWatchTransport {
   }
 
   /**
- * 
- */
+   *
+   */
   write(entries) {
     if (!Array.isArray(entries)) {
       entries = [entries];
     }
 
-    
     this.queue.push(...entries);
     this.stats.events += entries.length;
 
-    
     this._scheduleBatch();
   }
 
   /**
- * 
- */
+   *
+   */
   _scheduleBatch() {
-    
     if (!this.initialized) {
       return;
     }
 
-    
     if (this.queue.length >= this.batchSize) {
       this._processBatch();
       return;
     }
 
-    
     if (this.batchTimer) {
       return;
     }
 
-    
     this.batchTimer = setTimeout(() => {
       this.batchTimer = null;
       if (this.queue.length > 0) {
@@ -149,8 +135,8 @@ export class CloudWatchTransport {
   }
 
   /**
- * 
- */
+   *
+   */
   async _processBatch() {
     if (this.processing || this.queue.length === 0 || !this.initialized) {
       return;
@@ -159,19 +145,15 @@ export class CloudWatchTransport {
     this.processing = true;
 
     try {
-      
       const batch = this.queue.splice(0, this.batchSize);
 
-      
-      const logEvents = batch.map(entry => {
+      const logEvents = batch.map((entry) => {
         let message = entry;
 
-        
         if (typeof entry === 'object') {
           message = JSON.stringify(entry);
         }
 
-        
         if (this.beforeFormat) {
           try {
             message = this.beforeFormat(entry, message);
@@ -182,18 +164,15 @@ export class CloudWatchTransport {
 
         return {
           message: String(message).substring(0, 4096), // CloudWatch limit
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
       });
 
-      
       await this._putLogEventsWithRetry(logEvents);
 
-      
       this.stats.sent += batch.length;
       this.stats.lastSentAt = new Date();
 
-      
       if (this.onSuccess) {
         try {
           await this.onSuccess(batch);
@@ -206,7 +185,6 @@ export class CloudWatchTransport {
       this.stats.lastErrorAt = new Date();
       this.stats.lastError = error.message;
 
-      
       if (this.onError) {
         try {
           await this.onError(error);
@@ -217,7 +195,6 @@ export class CloudWatchTransport {
     } finally {
       this.processing = false;
 
-      
       if (this.queue.length > 0) {
         this._scheduleBatch();
       }
@@ -225,40 +202,36 @@ export class CloudWatchTransport {
   }
 
   /**
- * 
- */
+   *
+   */
   async _putLogEventsWithRetry(logEvents, attempt = 0) {
     try {
       const params = {
         logGroupName: this.logGroupName,
         logStreamName: this.logStreamName,
         logEvents: logEvents,
-        sequenceToken: this.sequenceToken
+        sequenceToken: this.sequenceToken,
       };
 
-      
       if (!params.sequenceToken) {
         delete params.sequenceToken;
       }
 
       const response = await this.client.putLogEvents(params);
-      
-      
+
       if (response.nextSequenceToken) {
         this.sequenceToken = response.nextSequenceToken;
       }
 
       return response;
     } catch (error) {
-      
       if (
         error.code === 'InvalidSequenceTokenException' ||
         error.code === 'ResourceNotFoundException'
       ) {
-        
         this.sequenceToken = null;
         await this._initialize();
-        
+
         if (attempt < this.maxRetries) {
           await this._delay(this.retryDelay * Math.pow(2, attempt));
           this.stats.retries++;
@@ -266,7 +239,6 @@ export class CloudWatchTransport {
         }
       }
 
-      
       if (attempt < this.maxRetries) {
         await this._delay(this.retryDelay * Math.pow(2, attempt));
         this.stats.retries++;
@@ -278,24 +250,23 @@ export class CloudWatchTransport {
   }
 
   /**
- * 
- */
+   *
+   */
   _delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
- * 
- */
+   *
+   */
   async flush() {
     if (this.batchTimer) {
       clearTimeout(this.batchTimer);
       this.batchTimer = null;
     }
 
-    
     if (!this.initialized) {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const checkInterval = setInterval(() => {
           if (this.initialized) {
             clearInterval(checkInterval);
@@ -305,14 +276,12 @@ export class CloudWatchTransport {
       });
     }
 
-    
     while (this.queue.length > 0 && !this.processing) {
       await this._processBatch();
     }
 
-    
     if (this.processing) {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const checkInterval = setInterval(() => {
           if (!this.processing) {
             clearInterval(checkInterval);
@@ -326,8 +295,8 @@ export class CloudWatchTransport {
   }
 
   /**
- * 
- */
+   *
+   */
   getStatistics() {
     return {
       ...this.stats,
@@ -335,13 +304,13 @@ export class CloudWatchTransport {
       processing: this.processing,
       initialized: this.initialized,
       logGroup: this.logGroupName,
-      logStream: this.logStreamName
+      logStream: this.logStreamName,
     };
   }
 
   /**
- * 
- */
+   *
+   */
   printStatistics() {
     const stats = this.getStatistics();
     console.log('\n=== CLOUDWATCH TRANSPORT STATISTICS ===');
@@ -362,8 +331,8 @@ export class CloudWatchTransport {
   }
 
   /**
- * 
- */
+   *
+   */
   async destroy() {
     await this.flush();
     if (this.batchTimer) {

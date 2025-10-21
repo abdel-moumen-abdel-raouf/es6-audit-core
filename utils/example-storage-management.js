@@ -1,12 +1,12 @@
 ﻿/**
  * Phase 5 - Real-World Usage Examples
- * 
+ *
  * Demonstrates practical usage of:
  * - RotatingFileTransport
  * - LogArchiver
  * - LogCleanupPolicy
  * - LogBuffer
- * 
+ *
  * @author audit-core
  * @version 1.0.0
  */
@@ -33,9 +33,9 @@ async function example1_BasicRotation() {
   // Create rotating transport with 1MB limit (for demo)
   const rotatingTransport = new RotatingFileTransport({
     filePath: path.join(examplesDir, 'example-1', 'app.log'),
-    maxFileSize: 1024 * 1024,  // 1MB
+    maxFileSize: 1024 * 1024, // 1MB
     maxFiles: 5,
-    rotationStrategy: 'size'
+    rotationStrategy: 'size',
   });
 
   console.log('â„¹ RotatingFileTransport created:');
@@ -106,11 +106,11 @@ async function example3_Cleanup() {
 
   // Create multiple test files with different ages
   console.log('â„¹ Creating test files with different ages...');
-  
+
   for (let i = 0; i < 5; i++) {
     const file = path.join(logsDir, `log-${i}.log`);
     fs.writeFileSync(file, `Log content ${i}\n`.repeat(100));
-    
+
     // Set mtime to various ages
     const ageMs = (i + 1) * 31 * 24 * 60 * 60 * 1000; // 31, 62, 93, 124, 155 days ago
     const oldTime = (Date.now() - ageMs) / 1000;
@@ -121,14 +121,16 @@ async function example3_Cleanup() {
 
   // Get initial stats
   const policy = new LogCleanupPolicy({
-    maxAge: 90 * 24 * 60 * 60 * 1000  // 90 days
+    maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
   });
 
   const initialStats = await policy.getDirectoryStats(logsDir);
   console.log('\nâœ“ Initial directory stats:');
   console.log(`  - Files: ${initialStats.fileCount}`);
   console.log(`  - Total size: ${(initialStats.totalSize / 1024).toFixed(2)} KB`);
-  console.log(`  - Oldest file: ${initialStats.oldestFile?.name} (${(initialStats.oldestFile?.age / 1000 / 60 / 60 / 24).toFixed(0)} days)`);
+  console.log(
+    `  - Oldest file: ${initialStats.oldestFile?.name} (${(initialStats.oldestFile?.age / 1000 / 60 / 60 / 24).toFixed(0)} days)`
+  );
 
   // Run cleanup
   const result = await policy.cleanup(logsDir);
@@ -158,8 +160,10 @@ async function example4_Buffering() {
     onFlush: (entries, meta) => {
       flushCount++;
       batchSize = entries.length;
-      console.log(`  [Flush #${flushCount}] Processed ${entries.length} entries (auto: ${meta.isAutoFlush})`);
-    }
+      console.log(
+        `  [Flush #${flushCount}] Processed ${entries.length} entries (auto: ${meta.isAutoFlush})`
+      );
+    },
   });
 
   console.log('â„¹ Buffer created:');
@@ -201,9 +205,9 @@ async function example5_ProductionSetup() {
   console.log('1. Rotating File Transport:');
   const rotatingTransport = new RotatingFileTransport({
     filePath: path.join(logsDir, 'app.log'),
-    maxFileSize: 5 * 1024 * 1024,  // 5MB
+    maxFileSize: 5 * 1024 * 1024, // 5MB
     maxFiles: 10,
-    rotationStrategy: 'both'
+    rotationStrategy: 'both',
   });
   await rotatingTransport.initialize();
   console.log('   âœ“ Configured for 5MB files, keeping 10 rotated files\n');
@@ -215,7 +219,7 @@ async function example5_ProductionSetup() {
     flushInterval: 5000,
     onFlush: (entries) => {
       console.log(`   âœ“ Buffer flushed: ${entries.length} entries`);
-    }
+    },
   });
   buffer.start();
   console.log('   âœ“ Enabled with 100-entry buffer, 5s flush interval\n');
@@ -223,10 +227,10 @@ async function example5_ProductionSetup() {
   // 3. Setup cleanup policy
   console.log('3. Cleanup Policy:');
   const cleanupPolicy = new LogCleanupPolicy({
-    maxAge: 30 * 24 * 60 * 60 * 1000,      // 30 days
-    maxTotalSize: 1024 * 1024 * 1024,      // 1GB
-    checkInterval: 1 * 60 * 60 * 1000,     // Every hour
-    priority: 'age'
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    maxTotalSize: 1024 * 1024 * 1024, // 1GB
+    checkInterval: 1 * 60 * 60 * 1000, // Every hour
+    priority: 'age',
   });
   console.log('   âœ“ Deletes files > 30 days or when size > 1GB\n');
 
@@ -272,29 +276,27 @@ async function example6_Performance() {
   console.log('1. Buffer Throughput Test:');
   const buffer = new LogBuffer({ maxSize: 1000 });
   const startTime = Date.now();
-  
+
   for (let i = 0; i < 10000; i++) {
     buffer.add(new LogEntry('INFO', 'perf-test', `Message ${i}`, {}));
   }
-  
+
   const duration = Date.now() - startTime;
-  const throughput = (10000 / duration * 1000).toFixed(0);
+  const throughput = ((10000 / duration) * 1000).toFixed(0);
   console.log(`   âœ“ Processed 10,000 entries in ${duration}ms`);
   console.log(`   âœ“ Throughput: ${throughput} entries/sec\n`);
 
   // 2. File rotation performance
   console.log('2. Rotation Performance Test:');
   const rotateStart = Date.now();
-  
+
   const transport = new RotatingFileTransport({
     filePath: path.join(logsDir, 'perf.log'),
-    maxFileSize: 512 * 1024  // 512KB
+    maxFileSize: 512 * 1024, // 512KB
   });
 
   for (let i = 0; i < 100; i++) {
-    await transport.log(
-      new LogEntry('INFO', 'perf', `Long message ${i}`.padEnd(100), {})
-    );
+    await transport.log(new LogEntry('INFO', 'perf', `Long message ${i}`.padEnd(100), {}));
   }
 
   const rotateDuration = Date.now() - rotateStart;
@@ -337,7 +339,6 @@ async function runAllExamples() {
     console.log('\n' + '='.repeat(80));
     console.log('âœ“ All Examples Completed Successfully');
     console.log('='.repeat(80) + '\n');
-
   } catch (error) {
     console.error('\nâœ— Error running examples:', error.message);
     process.exit(1);
@@ -355,6 +356,5 @@ export {
   example3_Cleanup,
   example4_Buffering,
   example5_ProductionSetup,
-  example6_Performance
+  example6_Performance,
 };
-

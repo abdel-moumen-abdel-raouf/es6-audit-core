@@ -1,12 +1,12 @@
 ﻿/**
  * Distributed Tracing Integration - Fix #22
- * 
+ *
  * Ø§Ù„Ù…Ù…ÙŠØ²Ø§Øª:
  * - Automatic trace ID generation
  * - OpenTelemetry compatibility
  * - Context propagation across services
  * - Span tracking
- * 
+ *
  * @author audit-core
  * @version 1.0.0-fix22
  */
@@ -20,22 +20,22 @@ export class TraceContext {
   constructor(config = {}) {
     // âœ… Trace ID (unique for entire request)
     this.traceId = config.traceId || randomUUID();
-    
+
     // âœ… Span ID (unique for this operation)
     this.spanId = config.spanId || randomUUID().replace(/-/g, '').substring(0, 16);
-    
+
     // Parent span ID (for nested operations)
     this.parentSpanId = config.parentSpanId || null;
-    
+
     // Service name
     this.service = config.service || 'unknown-service';
-    
+
     // Timestamp
     this.timestamp = config.timestamp || Date.now();
-    
+
     // Tags/labels
     this.tags = config.tags || {};
-    
+
     // Baggage (metadata to propagate)
     this.baggage = config.baggage || {};
   }
@@ -45,16 +45,16 @@ export class TraceContext {
    */
   createChildSpan(operationName, config = {}) {
     const childSpan = new TraceContext({
-      traceId: this.traceId,  // âœ… Same trace ID
+      traceId: this.traceId, // âœ… Same trace ID
       spanId: randomUUID().replace(/-/g, '').substring(0, 16),
-      parentSpanId: this.spanId,  // âœ… Point to parent
+      parentSpanId: this.spanId, // âœ… Point to parent
       service: this.service,
       tags: {
         ...this.tags,
         operationName,
-        ...config.tags
+        ...config.tags,
       },
-      baggage: { ...this.baggage, ...config.baggage }
+      baggage: { ...this.baggage, ...config.baggage },
     });
 
     return childSpan;
@@ -71,7 +71,7 @@ export class TraceContext {
       service: this.service,
       timestamp: this.timestamp,
       attributes: this.tags,
-      baggage: this.baggage
+      baggage: this.baggage,
     };
   }
 
@@ -89,7 +89,7 @@ export class TraceContext {
    */
   toJaegerFormat() {
     return {
-      uber_trace_id: `${this.traceId}:${this.spanId}:${this.parentSpanId || 0}:1`
+      uber_trace_id: `${this.traceId}:${this.spanId}:${this.parentSpanId || 0}:1`,
     };
   }
 
@@ -98,11 +98,11 @@ export class TraceContext {
    */
   getHeaders() {
     return {
-      'traceparent': this.toW3CTraceContext(),
+      traceparent: this.toW3CTraceContext(),
       'x-trace-id': this.traceId,
       'x-span-id': this.spanId,
       'x-parent-span-id': this.parentSpanId || '',
-      'x-service': this.service
+      'x-service': this.service,
     };
   }
 
@@ -111,14 +111,14 @@ export class TraceContext {
    */
   static fromHeaders(headers) {
     const traceparent = headers['traceparent'];
-    
+
     if (traceparent) {
       // W3C format: version-traceId-spanId-traceFlags
       const parts = traceparent.split('-');
       return new TraceContext({
         traceId: parts[1],
         spanId: parts[2],
-        service: headers['x-service'] || 'unknown-service'
+        service: headers['x-service'] || 'unknown-service',
       });
     }
 
@@ -126,7 +126,7 @@ export class TraceContext {
     return new TraceContext({
       traceId: headers['x-trace-id'] || randomUUID(),
       spanId: headers['x-span-id'] || randomUUID().replace(/-/g, '').substring(0, 16),
-      service: headers['x-service'] || 'unknown-service'
+      service: headers['x-service'] || 'unknown-service',
     });
   }
 
@@ -138,7 +138,7 @@ export class TraceContext {
       traceId: this.traceId,
       spanId: this.spanId,
       service: this.service,
-      depth: this.parentSpanId ? 'child' : 'root'
+      depth: this.parentSpanId ? 'child' : 'root',
     };
   }
 }
@@ -155,13 +155,13 @@ export class DistributedTracer {
     this.serviceName = config.serviceName || 'app';
     this.enabled = config.enabled ?? true;
     this.samplingRate = config.samplingRate ?? 1.0; // 100% by default
-    
+
     this.activeTraces = new Map(); // traceId -> TraceContext
     this.stats = {
       traced: 0,
       sampled: 0,
       propagated: 0,
-      errors: 0
+      errors: 0,
     };
   }
 
@@ -181,9 +181,9 @@ export class DistributedTracer {
       service: this.serviceName,
       tags: {
         operationName,
-        ...config.tags
+        ...config.tags,
       },
-      baggage: config.baggage
+      baggage: config.baggage,
     });
 
     this.activeTraces.set(trace.traceId, trace);
@@ -200,17 +200,16 @@ export class DistributedTracer {
 
     try {
       const trace = TraceContext.fromHeaders(headers);
-      
+
       // Create child span for this operation
       const childSpan = trace.createChildSpan(operationName, {
-        service: this.serviceName
+        service: this.serviceName,
       });
 
       this.activeTraces.set(trace.traceId, childSpan);
       this.stats.propagated++;
 
       return childSpan;
-
     } catch (error) {
       console.error('[DistributedTracer] Error continuing trace:', error);
       this.stats.errors++;
@@ -239,7 +238,7 @@ export class DistributedTracer {
     return {
       ...this.stats,
       activeTraces: this.activeTraces.size,
-      samplingRate: this.samplingRate
+      samplingRate: this.samplingRate,
     };
   }
 }
@@ -262,9 +261,7 @@ export class LogEntryWithTrace {
    * Serialize for transmission
    */
   serialize() {
-    const base = typeof this.entry === 'string' 
-      ? { message: this.entry }
-      : this.entry;
+    const base = typeof this.entry === 'string' ? { message: this.entry } : this.entry;
 
     if (this.traceContext) {
       return {
@@ -272,7 +269,7 @@ export class LogEntryWithTrace {
         trace: this.traceContext.toOpenTelemetry(),
         traceId: this.traceContext.traceId,
         spanId: this.traceContext.spanId,
-        service: this.traceContext.service
+        service: this.traceContext.service,
       };
     }
 
@@ -303,13 +300,13 @@ export class LoggerWithDistributedTracing {
     this.tracer = new DistributedTracer({
       serviceName: config.serviceName || 'app',
       enabled: config.tracingEnabled ?? true,
-      samplingRate: config.samplingRate ?? 1.0
+      samplingRate: config.samplingRate ?? 1.0,
     });
 
     this.currentTrace = null;
     this.stats = {
       logged: 0,
-      traced: 0
+      traced: 0,
     };
   }
 
@@ -336,7 +333,7 @@ export class LoggerWithDistributedTracing {
     const entry = {
       message,
       level,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     // âœ… Add trace information
@@ -377,7 +374,7 @@ export class LoggerWithDistributedTracing {
   getStatistics() {
     return {
       ...this.stats,
-      tracer: this.tracer.getStatistics()
+      tracer: this.tracer.getStatistics(),
     };
   }
 }
@@ -394,9 +391,8 @@ export function createLoggerWithTracing(config = {}) {
     logger: config.logger,
     serviceName: config.serviceName,
     tracingEnabled: config.tracingEnabled ?? true,
-    samplingRate: config.samplingRate ?? 1.0
+    samplingRate: config.samplingRate ?? 1.0,
   });
 }
 
 export default DistributedTracer;
-

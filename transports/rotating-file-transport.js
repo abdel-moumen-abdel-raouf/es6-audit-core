@@ -1,6 +1,6 @@
 ﻿/**
  * RotatingFileTransport - File transport with log rotation support
- * 
+ *
  * Features:
  * - Size-based rotation (splits file at max size)
  * - Date-based rotation (daily)
@@ -8,7 +8,7 @@
  * - Automatic old file removal (keep max N files)
  * - Asynchronous I/O operations
  * - Error handling and recovery
- * 
+ *
  * @author audit-core
  * @version 1.0.0
  */
@@ -21,7 +21,7 @@ import path from 'path';
 class RotatingFileTransport extends BaseTransport {
   /**
    * Initialize rotating file transport
-   * 
+   *
    * @param {Object} options - Configuration options
    * @param {string} options.filePath - Path to log file
    * @param {number} [options.maxFileSize=10485760] - Max file size in bytes (default: 10MB)
@@ -33,16 +33,16 @@ class RotatingFileTransport extends BaseTransport {
    */
   constructor(options = {}) {
     super();
-    
+
     this._validateOptions(options);
-    
+
     this.filePath = options.filePath;
     this.maxFileSize = options.maxFileSize ?? 10 * 1024 * 1024; // 10MB
     this.maxFiles = options.maxFiles ?? 5;
     this.rotationStrategy = options.rotationStrategy ?? 'both'; // 'size' | 'daily' | 'both'
     this.dateFormat = options.dateFormat ?? 'YYYY-MM-DD';
     this.compress = options.compress ?? false;
-    
+
     // Track current file state
     this._currentDate = this._getCurrentDateString();
     this._fileCheckInterval = null;
@@ -50,7 +50,7 @@ class RotatingFileTransport extends BaseTransport {
     this._pendingWrites = [];
     this._isRotating = false;
   }
-  
+
   /**
    * Validate options
    * @private
@@ -59,29 +59,26 @@ class RotatingFileTransport extends BaseTransport {
    */
   _validateOptions(options) {
     if (!options.filePath || typeof options.filePath !== 'string') {
-      throw new LoggingError(
-        'INVALID_CONFIG',
-        'filePath must be a non-empty string',
-        { receivedFilePath: options.filePath }
-      );
+      throw new LoggingError('INVALID_CONFIG', 'filePath must be a non-empty string', {
+        receivedFilePath: options.filePath,
+      });
     }
-    
-    if (options.maxFileSize && (typeof options.maxFileSize !== 'number' || options.maxFileSize <= 0)) {
-      throw new LoggingError(
-        'INVALID_CONFIG',
-        'maxFileSize must be a positive number',
-        { receivedMaxFileSize: options.maxFileSize }
-      );
+
+    if (
+      options.maxFileSize &&
+      (typeof options.maxFileSize !== 'number' || options.maxFileSize <= 0)
+    ) {
+      throw new LoggingError('INVALID_CONFIG', 'maxFileSize must be a positive number', {
+        receivedMaxFileSize: options.maxFileSize,
+      });
     }
-    
+
     if (options.maxFiles && (typeof options.maxFiles !== 'number' || options.maxFiles < 1)) {
-      throw new LoggingError(
-        'INVALID_CONFIG',
-        'maxFiles must be a positive number >= 1',
-        { receivedMaxFiles: options.maxFiles }
-      );
+      throw new LoggingError('INVALID_CONFIG', 'maxFiles must be a positive number >= 1', {
+        receivedMaxFiles: options.maxFiles,
+      });
     }
-    
+
     const validStrategies = ['size', 'daily', 'both'];
     if (options.rotationStrategy && !validStrategies.includes(options.rotationStrategy)) {
       throw new LoggingError(
@@ -91,7 +88,7 @@ class RotatingFileTransport extends BaseTransport {
       );
     }
   }
-  
+
   /**
    * Initialize transport
    * @async
@@ -105,12 +102,12 @@ class RotatingFileTransport extends BaseTransport {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      
+
       // Check current file size and rotate if needed
       if (fs.existsSync(this.filePath)) {
         await this._checkAndRotateIfNeeded();
       }
-      
+
       this._initialized = true;
     } catch (error) {
       throw new LoggingError(
@@ -120,7 +117,7 @@ class RotatingFileTransport extends BaseTransport {
       );
     }
   }
-  
+
   /**
    * Log entry to file
    * @async
@@ -132,36 +129,31 @@ class RotatingFileTransport extends BaseTransport {
       if (!this._initialized) {
         await this.initialize();
       }
-      
+
       if (!Array.isArray(entries)) {
         entries = [entries];
       }
-      
+
       // Check if rotation needed before writing
       await this._checkAndRotateIfNeeded();
-      
+
       // Format and write entries
-      const content = entries
-        .map(entry => entry.toString())
-        .join('\n') + '\n';
-      
+      const content = entries.map((entry) => entry.toString()).join('\n') + '\n';
+
       await this._writeToFile(content);
-      
+
       // Check again after writing (in case this write triggered size limit)
       await this._checkAndRotateIfNeeded();
-      
     } catch (error) {
       if (error instanceof LoggingError) {
         throw error;
       }
-      throw new LoggingError(
-        'LOG_FAILED',
-        `Failed to log entry: ${error.message}`,
-        { originalError: error }
-      );
+      throw new LoggingError('LOG_FAILED', `Failed to log entry: ${error.message}`, {
+        originalError: error,
+      });
     }
   }
-  
+
   /**
    * Check if rotation is needed and perform if necessary
    * @private
@@ -170,11 +162,11 @@ class RotatingFileTransport extends BaseTransport {
    */
   async _checkAndRotateIfNeeded() {
     if (this._isRotating) return;
-    
+
     if (!fs.existsSync(this.filePath)) {
       return; // File doesn't exist yet, no rotation needed
     }
-    
+
     const shouldRotate = await this._shouldRotate();
     if (shouldRotate) {
       this._isRotating = true;
@@ -185,7 +177,7 @@ class RotatingFileTransport extends BaseTransport {
       }
     }
   }
-  
+
   /**
    * Determine if rotation should occur
    * @private
@@ -200,7 +192,7 @@ class RotatingFileTransport extends BaseTransport {
         return true;
       }
     }
-    
+
     // Date-based rotation
     if (['daily', 'both'].includes(this.rotationStrategy)) {
       const currentDate = this._getCurrentDateString();
@@ -209,10 +201,10 @@ class RotatingFileTransport extends BaseTransport {
         return true;
       }
     }
-    
+
     return false;
   }
-  
+
   /**
    * Rotate the current log file
    * @private
@@ -224,29 +216,27 @@ class RotatingFileTransport extends BaseTransport {
       if (!fs.existsSync(this.filePath)) {
         return;
       }
-      
+
       // Create rotation filename with timestamp
       const timestamp = this._getTimestamp();
       const ext = path.extname(this.filePath);
       const basename = path.basename(this.filePath, ext);
       const dirname = path.dirname(this.filePath);
       const rotatedPath = path.join(dirname, `${basename}.${timestamp}${ext}`);
-      
+
       // Rename current file to rotated name
       await this._renameFile(this.filePath, rotatedPath);
-      
+
       // Clean up old files (keep only maxFiles)
       await this._cleanupOldFiles(dirname, basename, ext);
-      
     } catch (error) {
-      throw new LoggingError(
-        'ROTATION_FAILED',
-        `Failed to rotate log file: ${error.message}`,
-        { originalError: error, filePath: this.filePath }
-      );
+      throw new LoggingError('ROTATION_FAILED', `Failed to rotate log file: ${error.message}`, {
+        originalError: error,
+        filePath: this.filePath,
+      });
     }
   }
-  
+
   /**
    * Cleanup old log files
    * @private
@@ -261,22 +251,24 @@ class RotatingFileTransport extends BaseTransport {
       if (!fs.existsSync(dirname)) {
         return;
       }
-      
+
       const files = fs.readdirSync(dirname);
-      
+
       // Filter for rotated files with same basename
       const rotatedFiles = files
-        .filter(f => {
-          const pattern = new RegExp(`^${basename}\\.\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}${ext}$`);
+        .filter((f) => {
+          const pattern = new RegExp(
+            `^${basename}\\.\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}${ext}$`
+          );
           return pattern.test(f);
         })
-        .map(f => ({
+        .map((f) => ({
           name: f,
           path: path.join(dirname, f),
-          mtime: fs.statSync(path.join(dirname, f)).mtime
+          mtime: fs.statSync(path.join(dirname, f)).mtime,
         }))
         .sort((a, b) => b.mtime - a.mtime); // Sort newest first
-      
+
       // Delete files beyond maxFiles limit
       for (let i = this.maxFiles - 1; i < rotatedFiles.length; i++) {
         const filePath = rotatedFiles[i].path;
@@ -287,13 +279,12 @@ class RotatingFileTransport extends BaseTransport {
           console.warn(`Failed to delete old log file: ${filePath}`, error);
         }
       }
-      
     } catch (error) {
       // Log but don't throw - cleanup failure shouldn't block logging
       console.warn(`Failed to cleanup old log files: ${error.message}`);
     }
   }
-  
+
   /**
    * Write content to file
    * @private
@@ -305,14 +296,13 @@ class RotatingFileTransport extends BaseTransport {
     try {
       await fs.promises.appendFile(this.filePath, content);
     } catch (error) {
-      throw new LoggingError(
-        'WRITE_FAILED',
-        `Failed to write to log file: ${error.message}`,
-        { originalError: error, filePath: this.filePath }
-      );
+      throw new LoggingError('WRITE_FAILED', `Failed to write to log file: ${error.message}`, {
+        originalError: error,
+        filePath: this.filePath,
+      });
     }
   }
-  
+
   /**
    * Rename file
    * @private
@@ -325,14 +315,14 @@ class RotatingFileTransport extends BaseTransport {
     try {
       await fs.promises.rename(oldPath, newPath);
     } catch (error) {
-      throw new LoggingError(
-        'RENAME_FAILED',
-        `Failed to rename log file: ${error.message}`,
-        { originalError: error, oldPath, newPath }
-      );
+      throw new LoggingError('RENAME_FAILED', `Failed to rename log file: ${error.message}`, {
+        originalError: error,
+        oldPath,
+        newPath,
+      });
     }
   }
-  
+
   /**
    * Get current date string for rotation
    * @private
@@ -345,7 +335,7 @@ class RotatingFileTransport extends BaseTransport {
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
-  
+
   /**
    * Get timestamp for rotation filename
    * @private
@@ -354,7 +344,7 @@ class RotatingFileTransport extends BaseTransport {
   _getTimestamp() {
     return new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
   }
-  
+
   /**
    * Get transport information
    * @returns {Object} Transport info
@@ -367,10 +357,10 @@ class RotatingFileTransport extends BaseTransport {
       maxFiles: this.maxFiles,
       rotationStrategy: this.rotationStrategy,
       compress: this.compress,
-      initialized: this._initialized
+      initialized: this._initialized,
     };
   }
-  
+
   /**
    * Shutdown transport
    * @async
@@ -382,4 +372,3 @@ class RotatingFileTransport extends BaseTransport {
 }
 
 export default RotatingFileTransport;
-

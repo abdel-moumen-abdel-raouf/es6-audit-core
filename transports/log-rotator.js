@@ -1,6 +1,6 @@
 /**
  * Log Rotation System
- * 
+ *
  * Handles automatic log file rotation based on size and date
  */
 
@@ -11,9 +11,9 @@ import path from 'path';
  * Rotation Strategy
  */
 const RotationStrategy = {
-  DAILY: 'daily',        // Rotate daily
-  SIZE: 'size',          // Rotate based on file size
-  BOTH: 'both'           // Rotate based on both conditions
+  DAILY: 'daily', // Rotate daily
+  SIZE: 'size', // Rotate based on file size
+  BOTH: 'both', // Rotate based on both conditions
 };
 
 /**
@@ -114,7 +114,7 @@ class LogRotator {
       const dir = path.dirname(filePath);
       const ext = path.extname(filePath);
       const basename = path.basename(filePath, ext);
-      
+
       // Generate rotated filename with timestamp
       const timestamp = this._getTimestamp();
       const rotatedPath = path.join(dir, `${basename}.${timestamp}${ext}`);
@@ -166,22 +166,22 @@ class LogRotator {
   async _cleanupOldFiles(dir, basename, ext) {
     try {
       const files = await fs.promises.readdir(dir);
-      
+
       // Find rotated files matching pattern
       const rotatedFiles = files
-        .filter(file => file.startsWith(basename) && file.includes('.') && file.endsWith(ext))
-        .filter(file => file !== `${basename}${ext}`) // Exclude current file
-        .map(file => ({
+        .filter((file) => file.startsWith(basename) && file.includes('.') && file.endsWith(ext))
+        .filter((file) => file !== `${basename}${ext}`) // Exclude current file
+        .map((file) => ({
           name: file,
           path: path.join(dir, file),
-          time: this._getFileTime(path.join(dir, file))
+          time: this._getFileTime(path.join(dir, file)),
         }))
         .sort((a, b) => b.time - a.time); // Newest first
 
       // Keep only maxFiles
       if (rotatedFiles.length >= this.maxFiles) {
         const toDelete = rotatedFiles.slice(this.maxFiles);
-        
+
         for (const file of toDelete) {
           try {
             await fs.promises.unlink(file.path);
@@ -225,11 +225,11 @@ class LogRotator {
       }
 
       const files = fs.readdirSync(dir);
-      
+
       return files
-        .filter(file => file.startsWith(basename) && file.includes('.') && file.endsWith(ext))
-        .filter(file => file !== `${basename}${ext}`)
-        .map(file => path.join(dir, file))
+        .filter((file) => file.startsWith(basename) && file.includes('.') && file.endsWith(ext))
+        .filter((file) => file !== `${basename}${ext}`)
+        .map((file) => path.join(dir, file))
         .sort()
         .reverse();
     } catch (error) {
@@ -269,7 +269,7 @@ class LogRotator {
         rotatedFiles: rotatedFiles,
         strategy: this.strategy,
         maxFileSize: this.maxFileSize,
-        maxFiles: this.maxFiles
+        maxFiles: this.maxFiles,
       };
     } catch (error) {
       console.error('Error getting stats:', error);
@@ -278,7 +278,4 @@ class LogRotator {
   }
 }
 
-export {
-  LogRotator,
-  RotationStrategy
-};
+export { LogRotator, RotationStrategy };

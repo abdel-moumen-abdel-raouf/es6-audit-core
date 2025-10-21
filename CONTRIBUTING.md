@@ -45,4 +45,3 @@ Include scope where helpful, e.g., `feat(core): add drainFully()`.
 
 - Do not commit secrets
 - Report vulnerabilities per `SECURITY.md`
-

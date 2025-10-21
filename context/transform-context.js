@@ -1,14 +1,14 @@
 /**
  * TransformContext Module
  * Hierarchical transform tracking for logging system
- * 
+ *
  * Features:
  * - Object transform storage (position, rotation, scale)
  * - Hierarchical relationships (parent-child)
  * - World transform computation
  * - Transform state snapshots
  * - Validation and error handling
- * 
+ *
  * @module TransformContext
  */
 
@@ -41,7 +41,7 @@ class SimpleTransform {
       position: { ...this.position },
       rotation: this.rotation,
       scale: { ...this.scale },
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     };
   }
 
@@ -62,25 +62,25 @@ class SimpleTransform {
     // Compose position: apply parent's rotation+scale to child's position, then add parent's position
     const cos = Math.cos(parent.rotation);
     const sin = Math.sin(parent.rotation);
-    
+
     // Scale child position by parent scale
     const scaledX = child.position.x * parent.scale.x;
     const scaledY = child.position.y * parent.scale.y;
-    
+
     // Rotate the scaled position by parent's rotation
     const rotatedX = scaledX * cos - scaledY * sin;
     const rotatedY = scaledX * sin + scaledY * cos;
-    
+
     // Add parent's position
     const composedPosition = {
       x: rotatedX + parent.position.x,
-      y: rotatedY + parent.position.y
+      y: rotatedY + parent.position.y,
     };
 
     // Compose scale: child scale multiplied by parent scale
     const composedScale = {
       x: child.scale.x * parent.scale.x,
-      y: child.scale.y * parent.scale.y
+      y: child.scale.y * parent.scale.y,
     };
 
     return new SimpleTransform(composedPosition, composedRotation, composedScale);
@@ -105,7 +105,7 @@ class SimpleTransform {
    * @returns {string}
    */
   toString() {
-    return `Transform(pos:[${this.position.x.toFixed(2)},${this.position.y.toFixed(2)}], rot:${(this.rotation * 180 / Math.PI).toFixed(2)}°, scale:[${this.scale.x.toFixed(2)},${this.scale.y.toFixed(2)}])`;
+    return `Transform(pos:[${this.position.x.toFixed(2)},${this.position.y.toFixed(2)}], rot:${((this.rotation * 180) / Math.PI).toFixed(2)}°, scale:[${this.scale.x.toFixed(2)},${this.scale.y.toFixed(2)}])`;
   }
 }
 
@@ -132,7 +132,7 @@ class TransformContext {
       totalObjects: 0,
       totalHierarchies: 0,
       cacheHitRate: 0,
-      lastUpdate: null
+      lastUpdate: null,
     };
   }
 
@@ -152,7 +152,11 @@ class TransformContext {
       if (typeof transform !== 'object' || !transform || !transform.position) {
         throw new Error('transform must be SimpleTransform or object with position property');
       }
-      t = new SimpleTransform(transform.position, transform.rotation ?? 0, transform.scale ?? { x: 1, y: 1 });
+      t = new SimpleTransform(
+        transform.position,
+        transform.rotation ?? 0,
+        transform.scale ?? { x: 1, y: 1 }
+      );
     }
 
     this.transforms.set(objectId, t);
@@ -189,12 +193,16 @@ class TransformContext {
     if (parentId) {
       // Check 1: Is parentId already an ancestor of objectId?
       if (this._isAncestor(parentId, objectId)) {
-        throw new Error(`Circular hierarchy detected: ${parentId} is already ancestor of ${objectId}`);
+        throw new Error(
+          `Circular hierarchy detected: ${parentId} is already ancestor of ${objectId}`
+        );
       }
-      
+
       // Check 2: Is objectId already an ancestor of parentId?
       if (this._isAncestor(objectId, parentId)) {
-        throw new Error(`Circular hierarchy detected: ${objectId} is already ancestor of ${parentId}`);
+        throw new Error(
+          `Circular hierarchy detected: ${objectId} is already ancestor of ${parentId}`
+        );
       }
     }
 
@@ -382,10 +390,10 @@ class TransformContext {
         parentId,
         ancestors,
         level: ancestors.length,
-        name
+        name,
       },
       metadata,
-      additionalData
+      additionalData,
     };
   }
 
@@ -450,7 +458,7 @@ class TransformContext {
       totalObjects: 0,
       totalHierarchies: 0,
       cacheHitRate: 0,
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     };
   }
 
@@ -466,9 +474,12 @@ class TransformContext {
       cachedTransforms: this.worldTransformCache.size,
       cacheHitCount: this.cacheHitCount,
       cacheMissCount: this.cacheMissCount,
-      cacheHitRate: totalCacheAccess > 0 ? (this.cacheHitCount / totalCacheAccess * 100).toFixed(2) + '%' : '0%',
+      cacheHitRate:
+        totalCacheAccess > 0
+          ? ((this.cacheHitCount / totalCacheAccess) * 100).toFixed(2) + '%'
+          : '0%',
       dirtyCount: this.dirtyFlags.size,
-      lastUpdate: this.stats.lastUpdate
+      lastUpdate: this.stats.lastUpdate,
     };
   }
 
@@ -482,7 +493,7 @@ class TransformContext {
       hierarchies: Object.fromEntries(this.hierarchies),
       names: Object.fromEntries(this.names),
       metadata: Object.fromEntries(this.metadata),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     for (const [id, transform] of this.transforms.entries()) {

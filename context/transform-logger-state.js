@@ -1,7 +1,7 @@
 /**
  * Transform Logger State Module
  * Advanced state tracking for animated characters with transforms
- * 
+ *
  * Features:
  * - Animation state tracking
  * - Character state snapshots
@@ -9,7 +9,7 @@
  * - State transitions
  * - Performance metrics
  * - State history
- * 
+ *
  * @module TransformLoggerState
  */
 
@@ -22,7 +22,7 @@ const AnimationState = {
   PAUSED: 'PAUSED',
   STOPPED: 'STOPPED',
   TRANSITIONING: 'TRANSITIONING',
-  ERROR: 'ERROR'
+  ERROR: 'ERROR',
 };
 
 /**
@@ -33,7 +33,7 @@ const CharacterState = {
   DEAD: 'DEAD',
   DAMAGED: 'DAMAGED',
   INVULNERABLE: 'INVULNERABLE',
-  HIDDEN: 'HIDDEN'
+  HIDDEN: 'HIDDEN',
 };
 
 /**
@@ -74,7 +74,7 @@ class TransformLoggerState {
     this.currentTransform = options.currentTransform ?? {
       position: { x: 0, y: 0 },
       rotation: 0,
-      scale: { x: 1, y: 1 }
+      scale: { x: 1, y: 1 },
     };
 
     this.targetTransform = options.targetTransform ?? null;
@@ -104,7 +104,7 @@ class TransformLoggerState {
       totalTransformUpdates: 0,
       timeAnimating: 0,
       timePaused: 0,
-      timeIdle: 0
+      timeIdle: 0,
     };
 
     // Listeners
@@ -177,7 +177,7 @@ class TransformLoggerState {
       this._recordAnimationEvent({
         action: 'play',
         animation: animationName,
-        options
+        options,
       });
 
       this._notifyListeners('animationStarted', { animation: animationName });
@@ -197,7 +197,7 @@ class TransformLoggerState {
       this.setAnimationState(AnimationState.PAUSED);
       this._recordAnimationEvent({
         action: 'pause',
-        frame: this.currentFrame
+        frame: this.currentFrame,
       });
       this._notifyListeners('animationPaused', { frame: this.currentFrame });
       return true;
@@ -214,7 +214,7 @@ class TransformLoggerState {
       this.setAnimationState(AnimationState.PLAYING);
       this._recordAnimationEvent({
         action: 'resume',
-        frame: this.currentFrame
+        frame: this.currentFrame,
       });
       this._notifyListeners('animationResumed', { frame: this.currentFrame });
       return true;
@@ -232,7 +232,7 @@ class TransformLoggerState {
       this.currentFrame = 0;
       this._recordAnimationEvent({
         action: 'stop',
-        animation: this.currentAnimation
+        animation: this.currentAnimation,
       });
       this._notifyListeners('animationStopped', { animation: this.currentAnimation });
       return true;
@@ -276,7 +276,7 @@ class TransformLoggerState {
       this.currentTransform = {
         position: { ...transform.position },
         rotation: transform.rotation ?? 0,
-        scale: { ...transform.scale } ?? { x: 1, y: 1 }
+        scale: { ...transform.scale } ?? { x: 1, y: 1 },
       };
 
       this.stats.totalTransformUpdates++;
@@ -308,7 +308,7 @@ class TransformLoggerState {
       this.targetTransform = {
         position: { ...targetTransform.position },
         rotation: targetTransform.rotation ?? 0,
-        scale: { ...targetTransform.scale } ?? { x: 1, y: 1 }
+        scale: { ...targetTransform.scale } ?? { x: 1, y: 1 },
       };
 
       this.transitionDuration = duration;
@@ -373,7 +373,7 @@ class TransformLoggerState {
     this._recordStateEvent({
       type: 'damage',
       amount,
-      healthAfter: this.health
+      healthAfter: this.health,
     });
 
     if (this.health <= 0) {
@@ -407,7 +407,7 @@ class TransformLoggerState {
     this._recordStateEvent({
       type: 'heal',
       amount,
-      healthAfter: this.health
+      healthAfter: this.health,
     });
 
     if (this.health === this.maxHealth) {
@@ -425,7 +425,7 @@ class TransformLoggerState {
     this.isVisible = visible;
     this._recordStateEvent({
       type: 'visibility',
-      visible
+      visible,
     });
     this._notifyListeners('visibilityChanged', { visible });
   }
@@ -442,7 +442,7 @@ class TransformLoggerState {
     this.opacity = opacity;
     this._recordStateEvent({
       type: 'opacity',
-      opacity
+      opacity,
     });
   }
 
@@ -464,7 +464,7 @@ class TransformLoggerState {
         frame: this.currentFrame,
         totalFrames: this.totalFrames,
         playbackSpeed: this.playbackSpeed,
-        isLooping: this.isLooping
+        isLooping: this.isLooping,
       },
       character: {
         state: this.characterState,
@@ -472,16 +472,17 @@ class TransformLoggerState {
         maxHealth: this.maxHealth,
         isVisible: this.isVisible,
         opacity: this.opacity,
-        zIndex: this.zIndex
+        zIndex: this.zIndex,
       },
       transform: {
         current: { ...this.currentTransform },
         target: this.targetTransform ? { ...this.targetTransform } : null,
         transitioning: this.animationState === AnimationState.TRANSITIONING,
-        transitionProgress: this.transitionDuration > 0 ? this.transitionElapsed / this.transitionDuration : 0
+        transitionProgress:
+          this.transitionDuration > 0 ? this.transitionElapsed / this.transitionDuration : 0,
       },
       metadata: { ...this.metadata },
-      stats: { ...this.stats }
+      stats: { ...this.stats },
     };
   }
 
@@ -495,10 +496,13 @@ class TransformLoggerState {
       name: this.currentAnimation,
       frame: this.currentFrame,
       totalFrames: this.totalFrames,
-      progress: this.totalFrames > 0 ? (this.currentFrame / this.totalFrames * 100).toFixed(2) + '%' : 'N/A',
+      progress:
+        this.totalFrames > 0
+          ? ((this.currentFrame / this.totalFrames) * 100).toFixed(2) + '%'
+          : 'N/A',
       duration: this.totalFrames * this.frameDuration,
       playbackSpeed: this.playbackSpeed,
-      isLooping: this.isLooping
+      isLooping: this.isLooping,
     };
   }
 
@@ -513,7 +517,7 @@ class TransformLoggerState {
       percentage: ((this.health / this.maxHealth) * 100).toFixed(2) + '%',
       state: this.characterState,
       damageThisFrame: this.damageLastFrame,
-      damageTotal: this.damageTotalSession
+      damageTotal: this.damageTotalSession,
     };
   }
 
@@ -545,7 +549,9 @@ class TransformLoggerState {
       lifespan,
       uptime: lifespan,
       averageFramesPerSecond: (this.stats.totalFramesProcessed / (lifespan / 1000)).toFixed(2),
-      averageAnimationsPerMinute: (this.stats.totalAnimationsPlayed / (lifespan / 60000)).toFixed(2)
+      averageAnimationsPerMinute: (this.stats.totalAnimationsPlayed / (lifespan / 60000)).toFixed(
+        2
+      ),
     };
   }
 
@@ -583,7 +589,7 @@ class TransformLoggerState {
       type: eventType,
       characterId: this.characterId,
       timestamp: Date.now(),
-      data: eventData
+      data: eventData,
     };
 
     for (const listener of this.listeners) {
@@ -606,7 +612,7 @@ class TransformLoggerState {
   _recordStateEvent(event) {
     this.stateHistory.push({
       timestamp: Date.now(),
-      ...event
+      ...event,
     });
 
     if (this.stateHistory.length > this.maxHistorySize) {
@@ -621,7 +627,7 @@ class TransformLoggerState {
   _recordAnimationEvent(event) {
     this.animationHistory.push({
       timestamp: Date.now(),
-      ...event
+      ...event,
     });
 
     if (this.animationHistory.length > this.maxHistorySize) {
@@ -637,7 +643,7 @@ class TransformLoggerState {
     this.transformHistory.push({
       timestamp: Date.now(),
       from: { ...fromTransform },
-      to: { ...toTransform }
+      to: { ...toTransform },
     });
 
     if (this.transformHistory.length > this.maxHistorySize) {
@@ -657,13 +663,13 @@ class TransformLoggerState {
     return {
       position: {
         x: from.position.x + (to.position.x - from.position.x) * t,
-        y: from.position.y + (to.position.y - from.position.y) * t
+        y: from.position.y + (to.position.y - from.position.y) * t,
       },
       rotation: from.rotation + (to.rotation - from.rotation) * t,
       scale: {
         x: from.scale.x + (to.scale.x - from.scale.x) * t,
-        y: from.scale.y + (to.scale.y - from.scale.y) * t
-      }
+        y: from.scale.y + (to.scale.y - from.scale.y) * t,
+      },
     };
   }
 
@@ -680,7 +686,7 @@ class TransformLoggerState {
       zIndex: this.zIndex,
       health: this.health,
       maxHealth: this.maxHealth,
-      metadata: this.metadata
+      metadata: this.metadata,
     });
     cloned.currentFrame = this.currentFrame;
     cloned.currentTransform = { ...this.currentTransform };
@@ -711,7 +717,7 @@ class TransformLoggerState {
       totalTransformUpdates: 0,
       timeAnimating: 0,
       timePaused: 0,
-      timeIdle: 0
+      timeIdle: 0,
     };
     this.createdAt = Date.now();
   }

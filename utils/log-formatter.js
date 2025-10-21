@@ -1,6 +1,6 @@
 /**
  * Log Formatter System
- * 
+ *
  * Provides multiple formatting options for log entries:
  * - Default: Standard format with timestamp, level, module, message
  * - JSON: Machine-readable JSON format
@@ -40,13 +40,17 @@ class DefaultFormatter extends BaseFormatter {
       `[${entry.timestamp.toISOString()}]`,
       `[${entry.moduleName}]`,
       `[${this._getLevelName(entry.level)}]`,
-      `${entry.message}`
+      `${entry.message}`,
     ];
 
     let result = parts.join(' ');
 
     // Add context if present
-    if (entry.context && typeof entry.context === 'object' && Object.keys(entry.context).length > 0) {
+    if (
+      entry.context &&
+      typeof entry.context === 'object' &&
+      Object.keys(entry.context).length > 0
+    ) {
       result += `\n  Context: ${JSON.stringify(entry.context, null, 2)}`;
     }
 
@@ -75,7 +79,7 @@ class JSONFormatter extends BaseFormatter {
       level: this._getLevelName(entry.level),
       module: entry.moduleName,
       message: entry.message,
-      context: entry.context || null
+      context: entry.context || null,
     };
 
     // Add optional fields if present
@@ -84,13 +88,15 @@ class JSONFormatter extends BaseFormatter {
     }
 
     if (entry.requestContext) {
-      obj.request = entry.requestContext.getSummary ? entry.requestContext.getSummary() : entry.requestContext;
+      obj.request = entry.requestContext.getSummary
+        ? entry.requestContext.getSummary()
+        : entry.requestContext;
     }
 
     if (entry.errorContext) {
       obj.error = {
         message: entry.errorContext.message || entry.message,
-        location: entry.errorContext.location
+        location: entry.errorContext.location,
       };
     }
 
@@ -157,14 +163,27 @@ class CustomFormatter extends BaseFormatter {
 
     // Valid variables: time, date, level, module, message, context, correlationId, request, error, system
     const validVars = [
-      'time', 'date', 'timestamp', 'iso',
-      'level', 'levelName', 'module', 'moduleName',
-      'message', 'msg',
-      'context', 'ctx',
-      'correlationId', 'corrId',
-      'requestId', 'userId', 'request',
-      'error', 'errorMessage',
-      'hostname', 'pid'
+      'time',
+      'date',
+      'timestamp',
+      'iso',
+      'level',
+      'levelName',
+      'module',
+      'moduleName',
+      'message',
+      'msg',
+      'context',
+      'ctx',
+      'correlationId',
+      'corrId',
+      'requestId',
+      'userId',
+      'request',
+      'error',
+      'errorMessage',
+      'hostname',
+      'pid',
     ];
 
     for (const variable of variables) {
@@ -221,7 +240,7 @@ class CustomFormatter extends BaseFormatter {
 
       // System variables
       hostname: entry.systemInfo?.hostname || 'N/A',
-      pid: entry.systemInfo?.pid || 'N/A'
+      pid: entry.systemInfo?.pid || 'N/A',
     };
 
     // Replace all variables
@@ -359,5 +378,5 @@ export {
   JSONFormatter,
   CompactFormatter,
   CustomFormatter,
-  LogFormatterManager
+  LogFormatterManager,
 };

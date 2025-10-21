@@ -1,6 +1,6 @@
 /**
  * Color Configuration System for Console Output
- * 
+ *
  * Provides ANSI color codes and color management:
  * - Per-level color customization (DEBUG, INFO, WARN, ERROR)
  * - TTY detection for automatic color toggling
@@ -186,7 +186,7 @@ class ColorTheme {
       module: this.module,
       timestamp: this.timestamp,
       context: this.context,
-      correlationId: this.correlationId
+      correlationId: this.correlationId,
     };
   }
 }
@@ -204,36 +204,48 @@ class ColorConfig {
    */
   static {
     // Standard theme (traditional colors)
-    ColorConfig.registerTheme('standard', new ColorTheme({
-      debug: ANSIColors.BLUE,
-      info: ANSIColors.GREEN,
-      warn: ANSIColors.YELLOW,
-      error: ANSIColors.RED
-    }));
+    ColorConfig.registerTheme(
+      'standard',
+      new ColorTheme({
+        debug: ANSIColors.BLUE,
+        info: ANSIColors.GREEN,
+        warn: ANSIColors.YELLOW,
+        error: ANSIColors.RED,
+      })
+    );
 
     // Vibrant theme (bright colors)
-    ColorConfig.registerTheme('vibrant', new ColorTheme({
-      debug: ANSIColors.BRIGHT_BLUE,
-      info: ANSIColors.BRIGHT_GREEN,
-      warn: ANSIColors.BRIGHT_YELLOW,
-      error: ANSIColors.BRIGHT_RED
-    }));
+    ColorConfig.registerTheme(
+      'vibrant',
+      new ColorTheme({
+        debug: ANSIColors.BRIGHT_BLUE,
+        info: ANSIColors.BRIGHT_GREEN,
+        warn: ANSIColors.BRIGHT_YELLOW,
+        error: ANSIColors.BRIGHT_RED,
+      })
+    );
 
     // Soft theme (dim colors)
-    ColorConfig.registerTheme('soft', new ColorTheme({
-      debug: ANSIColors.DIM + ANSIColors.BLUE,
-      info: ANSIColors.DIM + ANSIColors.GREEN,
-      warn: ANSIColors.DIM + ANSIColors.YELLOW,
-      error: ANSIColors.DIM + ANSIColors.RED
-    }));
+    ColorConfig.registerTheme(
+      'soft',
+      new ColorTheme({
+        debug: ANSIColors.DIM + ANSIColors.BLUE,
+        info: ANSIColors.DIM + ANSIColors.GREEN,
+        warn: ANSIColors.DIM + ANSIColors.YELLOW,
+        error: ANSIColors.DIM + ANSIColors.RED,
+      })
+    );
 
     // Dark theme (256 colors)
-    ColorConfig.registerTheme('dark', new ColorTheme({
-      debug: ANSIColors.color256(33),   // Blue
-      info: ANSIColors.color256(46),    // Green
-      warn: ANSIColors.color256(226),   // Yellow
-      error: ANSIColors.color256(196)   // Red
-    }));
+    ColorConfig.registerTheme(
+      'dark',
+      new ColorTheme({
+        debug: ANSIColors.color256(33), // Blue
+        info: ANSIColors.color256(46), // Green
+        warn: ANSIColors.color256(226), // Yellow
+        error: ANSIColors.color256(196), // Red
+      })
+    );
 
     // Set default theme
     ColorConfig.setTheme('standard');
@@ -380,13 +392,9 @@ class ColorConfig {
       currentTheme: this.#currentTheme ? 'standard' : null,
       colorsEnabled: this.#colorsEnabled,
       ttyDetected: this.detectTTY(),
-      availableThemes: this.listThemes()
+      availableThemes: this.listThemes(),
     };
   }
 }
 
-export {
-  ANSIColors,
-  ColorTheme,
-  ColorConfig
-};
+export { ANSIColors, ColorTheme, ColorConfig };

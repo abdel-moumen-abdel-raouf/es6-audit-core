@@ -1,6 +1,6 @@
 /**
  * Log Buffer System
- * 
+ *
  * Buffers log entries for batch processing and performance optimization
  */
 
@@ -22,12 +22,12 @@ class LogBuffer {
     this.flushInterval = options.flushInterval ?? 5000;
     this.maxQueueSize = options.maxQueueSize ?? 10000;
     this.onFlush = options.onFlush ?? null;
-    
+
     this.buffer = [];
     this.flushTimer = null;
     this.isRunning = false;
     this.isProcessing = false;
-    
+
     this.validateOptions();
   }
 
@@ -74,7 +74,7 @@ class LogBuffer {
     }
 
     this.isRunning = false;
-    
+
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
@@ -203,7 +203,7 @@ class LogBuffer {
       flushInterval: this.flushInterval,
       maxQueueSize: this.maxQueueSize,
       isRunning: this.isRunning,
-      utilizationPercent: ((this.buffer.length / this.maxSize) * 100).toFixed(2)
+      utilizationPercent: ((this.buffer.length / this.maxSize) * 100).toFixed(2),
     };
   }
 }
@@ -224,7 +224,7 @@ class AsyncLogBuffer {
     this.maxSize = options.maxSize ?? 100;
     this.flushInterval = options.flushInterval ?? 5000;
     this.maxQueueSize = options.maxQueueSize ?? 10000;
-    
+
     this.buffer = [];
     this.waitList = [];
     this.flushTimer = null;
@@ -239,7 +239,7 @@ class AsyncLogBuffer {
   async add(entry) {
     // If queue full, wait until space available
     while (this.buffer.length >= this.maxQueueSize) {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         this.waitList.push(resolve);
       });
     }
@@ -329,7 +329,7 @@ class AsyncLogBuffer {
       maxSize: this.maxSize,
       waiting: this.waitList.length,
       flushInterval: this.flushInterval,
-      isRunning: this.isRunning
+      isRunning: this.isRunning,
     };
   }
 }
@@ -373,13 +373,13 @@ class BatchProcessor {
         results.push({
           success: true,
           batch: batch,
-          result: result
+          result: result,
         });
       } catch (error) {
         results.push({
           success: false,
           batch: batch,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -394,10 +394,10 @@ class BatchProcessor {
    */
   _createBatches(entries) {
     const batches = [];
-    
+
     for (let i = 0; i < entries.length; i += this.batchSize) {
       batches.push(entries.slice(i, i + this.batchSize));
-      
+
       if (batches.length >= this.maxBatches) {
         break;
       }
@@ -413,13 +413,9 @@ class BatchProcessor {
   getStats() {
     return {
       batchSize: this.batchSize,
-      maxBatches: this.maxBatches
+      maxBatches: this.maxBatches,
     };
   }
 }
 
-export {
-  LogBuffer,
-  AsyncLogBuffer,
-  BatchProcessor
-};
+export { LogBuffer, AsyncLogBuffer, BatchProcessor };

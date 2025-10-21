@@ -1,6 +1,6 @@
 /**
  * Contextual Log Entry with Full Error Context
- * 
+ *
  * Combines standard logging with comprehensive error context:
  * - Stack traces
  * - Correlation IDs
@@ -31,11 +31,12 @@ class ContextualLogEntry extends LogEntry {
       hostname: os.hostname(),
       pid: process.pid,
       platform: process.platform,
-      nodeVersion: process.version
+      nodeVersion: process.version,
     };
 
     // Capture error context if applicable
-    if (level <= 1) { // ERROR level or higher priority
+    if (level <= 1) {
+      // ERROR level or higher priority
       if (context.error instanceof Error) {
         this.errorContext = new ErrorContext(context.error, message);
       } else if (context instanceof Error) {
@@ -44,7 +45,7 @@ class ContextualLogEntry extends LogEntry {
         // Capture source location
         this.errorContext = {
           location: StackTraceExtractor.getSourceLocation(2),
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
       }
     }
@@ -55,7 +56,7 @@ class ContextualLogEntry extends LogEntry {
         ...this.context,
         correlationId: this.correlationId,
         requestId: this.requestContext?.id,
-        userId: this.requestContext?.userId
+        userId: this.requestContext?.userId,
       };
     }
   }
@@ -81,14 +82,16 @@ class ContextualLogEntry extends LogEntry {
    * @returns {object|null} Error context or null
    */
   getErrorInfo() {
-    return this.errorContext ? {
-      message: this.errorContext.message || this.message,
-      name: this.errorContext.name,
-      code: this.errorContext.code,
-      location: this.errorContext.location,
-      stack: this.errorContext.stack?.slice(0, 5).map(f => f.toString()) || [],
-      timestamp: this.errorContext.timestamp
-    } : null;
+    return this.errorContext
+      ? {
+          message: this.errorContext.message || this.message,
+          name: this.errorContext.name,
+          code: this.errorContext.code,
+          location: this.errorContext.location,
+          stack: this.errorContext.stack?.slice(0, 5).map((f) => f.toString()) || [],
+          timestamp: this.errorContext.timestamp,
+        }
+      : null;
   }
 
   /**
@@ -102,7 +105,7 @@ class ContextualLogEntry extends LogEntry {
       request: this.getRequestInfo(),
       error: this.getErrorInfo(),
       system: this.systemInfo,
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
   }
 
@@ -121,7 +124,7 @@ class ContextualLogEntry extends LogEntry {
       context: this.context,
       request: this.getRequestInfo(),
       error: this.getErrorInfo(),
-      system: this.systemInfo
+      system: this.systemInfo,
     };
   }
 

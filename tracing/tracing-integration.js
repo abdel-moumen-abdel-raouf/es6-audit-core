@@ -1,16 +1,16 @@
 /**
  * Distributed Tracing Auto-Integration - FIXED
- * 
+ *
  */
 
 /**
  * Distributed Tracing Integration Module
- * 
+ *
  * Core tracing integration for distributed system monitoring:
  * - Trace context management
  * - Span creation and tracking
  * - Context propagation
- * 
+ *
  * @module TracingIntegration
  * @version 1.0.0
  */
@@ -45,7 +45,7 @@ export class DistributedTracingIntegration {
       spanId: this._generateSpanId(),
       parentSpanId: context.spanId,
       operationName,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
   }
 
@@ -55,7 +55,7 @@ export class DistributedTracingIntegration {
       ...span,
       endTime: Date.now(),
       duration: Date.now() - span.startTime,
-      error: error ? error.message : null
+      error: error ? error.message : null,
     };
   }
 
@@ -68,7 +68,7 @@ export class DistributedTracingIntegration {
       traceId: traceContext.traceId,
       spanId: traceContext.spanId,
       parentSpanId: traceContext.parentSpanId,
-      traceFlags: 1
+      traceFlags: 1,
     };
   }
 
@@ -80,7 +80,7 @@ export class DistributedTracingIntegration {
       'X-Trace-ID': traceContext.traceId,
       'X-Span-ID': traceContext.spanId,
       'X-Parent-Span-ID': traceContext.parentSpanId || 'null',
-      'Traceparent': `00-${traceContext.traceId}-${traceContext.spanId}-01`
+      Traceparent: `00-${traceContext.traceId}-${traceContext.spanId}-01`,
     };
   }
 
@@ -93,20 +93,20 @@ export class DistributedTracingIntegration {
         return {
           traceId: parts[1],
           spanId: parts[2],
-          sampled: parts[3] === '01'
+          sampled: parts[3] === '01',
         };
       }
     }
     return {
       traceId: headers?.['x-trace-id'] || headers?.['X-Trace-ID'],
       spanId: headers?.['x-span-id'] || headers?.['X-Span-ID'],
-      parentSpanId: headers?.['x-parent-span-id'] || headers?.['X-Parent-Span-ID']
+      parentSpanId: headers?.['x-parent-span-id'] || headers?.['X-Parent-Span-ID'],
     };
   }
 
   static patchEnhancedLogger(EnhancedLoggerClass) {
     const originalLog = EnhancedLoggerClass.prototype.log;
-    EnhancedLoggerClass.prototype.log = function(...args) {
+    EnhancedLoggerClass.prototype.log = function (...args) {
       let entry = args[0] || {};
       if (typeof entry !== 'object') {
         entry = { message: entry };
@@ -119,10 +119,10 @@ export class DistributedTracingIntegration {
 
   static patchHttpTransport(HttpTransportClass) {
     const originalSendWithRetry = HttpTransportClass.prototype._sendWithRetry;
-    HttpTransportClass.prototype._sendWithRetry = async function(payload, attempt = 0) {
+    HttpTransportClass.prototype._sendWithRetry = async function (payload, attempt = 0) {
       const headers = {
         ...this.headers,
-        ...DistributedTracingIntegration.getHTTPHeaders()
+        ...DistributedTracingIntegration.getHTTPHeaders(),
       };
       const originalHeaders = this.headers;
       this.headers = headers;
@@ -142,10 +142,12 @@ export class DistributedTracingIntegration {
   static getStats() {
     return {
       enabled: this.#enabled,
-      context: this.#globalContext ? {
-        traceId: this.#globalContext.traceId,
-        spanId: this.#globalContext.spanId
-      } : null
+      context: this.#globalContext
+        ? {
+            traceId: this.#globalContext.traceId,
+            spanId: this.#globalContext.spanId,
+          }
+        : null,
     };
   }
 }

@@ -1,0 +1,15 @@
+{
+  "all": true,
+  "reporter": ["text-summary", "lcov"],
+  "report-dir": "coverage",
+  "include": ["**/*.js"],
+  "exclude": [
+    "tests/**",
+    "**/*.test.js",
+    "**/index.js",
+    "**/*.cjs",
+    "node_modules/**",
+    "coverage/**",
+    ".nyc_output/**"
+  ]
+}

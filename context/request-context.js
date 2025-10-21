@@ -1,6 +1,6 @@
 /**
  * Request Context Manager
- * 
+ *
  * Captures and manages request-level context information
  * (userId, URL, method, headers, etc.)
  */
@@ -85,7 +85,7 @@ class RequestContext {
       userId: this.userId,
       ip: this.ip,
       duration: this.getDuration(),
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
   }
 
@@ -107,7 +107,7 @@ class RequestContext {
       timestamp: this.timestamp,
       duration: this.getDuration(),
       tags: this.tags,
-      metadata: this.metadata
+      metadata: this.metadata,
     };
   }
 
@@ -145,7 +145,7 @@ class RequestContextFactory {
       method: req.method,
       ip: req.ip,
       userAgent: headers['user-agent'],
-      referer: headers.referer
+      referer: headers.referer,
     });
   }
 
@@ -165,7 +165,7 @@ class RequestContextFactory {
       method: req.method,
       ip: req.ip,
       userAgent: headers['user-agent'],
-      referer: headers.referer
+      referer: headers.referer,
     });
   }
 
@@ -185,7 +185,7 @@ class RequestContextFactory {
       method: ctx.method,
       ip: ctx.ip,
       userAgent: headers['user-agent'],
-      referer: headers.referer
+      referer: headers.referer,
     });
   }
 
