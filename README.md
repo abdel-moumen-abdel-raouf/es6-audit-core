@@ -34,12 +34,12 @@ Target users:
 - Metrics collection (counter/gauge/histogram) with Prometheus export format
 - Synchronization utilities (Mutex) for safe concurrency
 - Worker thread integration scaffolding (pool and integrations)
-- ES Modules-first; Node.js >= 14
+- ES Modules-first; Node.js >= 18
 
 ## Architecture & Design Overview
 
 - Technologies:
-  - Node.js (>= 14), native ES Modules (`"type": "module"`)
+  - Node.js (>= 18), native ES Modules (`"type": "module"`)
   - Uses Node core modules (fs, path, crypto, async_hooks) where needed
   - No external runtime dependencies in the core
 
@@ -65,7 +65,6 @@ Target users:
 ## Folder Structure & File Summary
 
 - `index.js` — Public ES Module exports (preferred entry)
-- `index.cjs` — CommonJS compatibility note (prefer ESM or dynamic import in CJS)
 - `jsconfig.json` — Editor/TS tooling options
 
 Key directories:
@@ -138,7 +137,7 @@ This package is ESM-only and requires Node.js 18+.
 
 Requirements:
 
-- Node.js >= 14
+- Node.js >= 18
 - Native ES Modules environment (package.json uses `"type": "module"`)
 
 Install (from a local clone or workspace):
@@ -452,12 +451,11 @@ Testing & Development
 
 ## Deployment
 
-Run tests and coverage:
-
-- Run all tests: npm test
-- Run only basic tests: npm run test:basic
-- Run only core tests: npm run test:core
-- Generate coverage: npm run coverage
+- Runtime:
+  - Node.js >= 18 recommended; ES Modules (`"type": "module"`)
+  - For file transport: ensure the log directory exists and the process has write permissions
+- Graceful shutdown:
+  - Call `logger.flush()` or `await logger.drain()` before exiting
   - For file transport, call `await fileTransport.shutdown()`
 - Docker (example):
   - Mount persistent volume for file logs
@@ -484,7 +482,7 @@ If you need to use this library from a CommonJS project, load it via:
 
 ```js
 (async () => {
-  const mod = await import('audit-core');
+  const mod = await import('@al-masry/audit-core');
 })();
 ```
 
@@ -506,7 +504,6 @@ For issues and feature requests, please open a GitHub issue in this repository. 
 
 Notes:
 
-- ESM-first design documented in `index.cjs` (CommonJS consumers should use dynamic import).
 - Public exports are defined in `index.js` and `package.json#exports`.
 
 ## API Manifest (v1.0 Freeze)
