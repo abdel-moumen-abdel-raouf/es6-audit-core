@@ -127,7 +127,18 @@ class AdvancedHttpTransport {
     this.options = options;
     this.errorHandler = new PermanentErrorHandler(options);
     this.circuitBreaker = options.circuitBreaker || null;
+    /**
+     * Reserved for a future persistent fallback store (e.g., file-backed queue)
+     * when remote delivery is unavailable. Currently unused but kept for
+     * backward-compatibility and to signal the extension point.
+     * @type {Array}
+     */
     this.fallbackQueue = [];
+    /**
+     * Reserved for tracking per-entry attempt counts if/when batching or
+     * de-duplication across retries is introduced. Currently unused.
+     * @type {Map<any, number>}
+     */
     this.attemptCounts = new Map();
     this.lastSuccessfulSend = null;
 

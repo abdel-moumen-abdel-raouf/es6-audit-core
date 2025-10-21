@@ -281,6 +281,8 @@ export class AdaptiveLogBuffer {
       listenersCount: this.listeners.length,
 
       ...this.stats,
+      // Backward-compatibility: expose a correctly spelled alias without removing the legacy key
+      timesFilled: this.stats.timesFulled,
     };
   }
 
