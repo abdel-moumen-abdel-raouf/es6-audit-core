@@ -7,7 +7,7 @@
 
 A high-performance, security-conscious logging and audit core for modern Node.js applications. Built as native ES Modules with production features including adaptive buffering with backpressure, rate limiting, sanitization/redaction, resilient transport chains, dynamic configuration, health checks, metrics, and distributed tracing.
 
-Published version: 1.0.0 (scoped as @al-masry/audit-core)
+Published version: 1.0.1 (scoped as @al-masry/audit-core)
 
 ## Overview / Introduction
 
