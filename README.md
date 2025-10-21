@@ -197,7 +197,7 @@ const logger = new CoreLogger({
   },
   rateLimiter: { tokensPerSecond: 1000, burstCapacity: 2000 },
   // Optional unified error hook for internal logging errors
-  onError: (err) => {
+  errorHandler: (err) => {
     // You can forward to your monitoring here
     // console.warn('Logger internal error:', err);
   },
@@ -206,6 +206,7 @@ const logger = new CoreLogger({
 await logger.info('Application started', { env: process.env.NODE_ENV });
 await logger.debug('Debug details will be buffered/sanitized');
 await logger.drain(); // optional: wait for backpressure to clear (e.g., before shutdown)
+await logger.close(); // gracefully close transports
 ```
 
 ## Example usage
@@ -377,12 +378,12 @@ Note: Health and Metrics are present in the repository but are not exported via 
 This library is primarily a set of ES classes. Highlights only:
 
 - `CoreLogger` (core/core-logger.js)
-  - `new CoreLogger({ name, buffer, rateLimiter, transports, onError, enableTransformLogging, transformContext })`
+  - `new CoreLogger({ name, buffer, rateLimiter, transports, errorHandler, enableTransformLogging, transformContext })`
   - `log(level, message, metadata?)`, `debug/info/warn/error(message, metadata?)` — all async, resolve to `boolean`
   - `logWithContext(level, objectId, message, additionalData?)`, `debugWithContext/infoWithContext/warnWithContext/errorWithContext`
   - Transform/context management: `registerObject`, `updateTransform`, `setObjectParent`, `getTransform`, `getHierarchyInfo`
   - State mgmt: `setObjectState`, `getObjectState`, `snapshotContext`, `restoreFromSnapshot`, `cleanupOldSnapshots`, `clearAll`
-  - Transports/flow: `addTransport`, `removeTransport`, `flush()`, `drain()` — both async
+  - Transports/flow: `addTransport`, `removeTransport`, `flush()`, `drain()`, `close()` — all async
   - Observability: `getStatistics`, `getReport`, `resetStats`, `destroy`
 
 - `AdaptiveLogBuffer` (transports/adaptive-log-buffer.js)
@@ -396,7 +397,7 @@ This library is primarily a set of ES classes. Highlights only:
 
 - `FileTransport` (transports/file-transport.js)
   - Node-only; `new FileTransport({ logDirectory, maxQueueSize?, flushInterval? })`
-  - `log(entry)`, `shutdown()`
+  - `log(entry)`, `write(entries)`, `close()` (alias: `shutdown()`)
 
 - `HttpTransport` (transports/http-transport.js)
   - `new HttpTransport(url, options)` — retry/backoff, dead-letter queue
@@ -455,8 +456,8 @@ Testing & Development
   - Node.js >= 18 recommended; ES Modules (`"type": "module"`)
   - For file transport: ensure the log directory exists and the process has write permissions
 - Graceful shutdown:
-  - Call `logger.flush()` or `await logger.drain()` before exiting
-  - For file transport, call `await fileTransport.shutdown()`
+  - Call `await logger.flush()` or `await logger.drain()` before exiting
+  - Then call `await logger.close()` to close transports (FileTransport: `close()`)
 - Docker (example):
   - Mount persistent volume for file logs
   - Set environment variables like `NODE_ENV=production`

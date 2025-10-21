@@ -4,8 +4,8 @@ import { LogLevel } from '../utils/types.js';
  * Transport that outputs log entries to the console with colored formatting.
  */
 export class ConsoleTransport extends BaseTransport {
-  constructor() {
-    super(...arguments);
+  constructor(options = {}) {
+    super(options);
     this.colors = {
       [LogLevel.ERROR]: '\x1b[31m', // Red
       [LogLevel.WARN]: '\x1b[33m', // Yellow
