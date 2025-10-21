@@ -5,20 +5,34 @@
   "type": "module",
   "main": "./index.js",
   "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.cjs",
-      "default": "./index.js"
-    },
-    "./internal": {
-      "import": "./internal/index.js",
-      "default": "./internal/index.js"
-    }
+    ".": { "import": "./index.js", "default": "./index.js" }
   },
+  "files": [
+    "index.js",
+    "index.cjs",
+    "core/**",
+    "config/**",
+    "context/**",
+    "error-handling/**",
+    "rate-limiting/**",
+    "sanitizer/**",
+    "sync/**",
+    "transports/**",
+    "utils/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "keywords": [
     "logging",
     "enterprise"
   ],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/abdel-moumen-abdel-raouf/es6-audit-core.git" },
+  "bugs": { "url": "https://github.com/abdel-moumen-abdel-raouf/es6-audit-core/issues" },
+  "homepage": "https://github.com/abdel-moumen-abdel-raouf/es6-audit-core#readme",
+  "author": "Abdel Moumen Abdel Raouf",
+  "sideEffects": false,
   "scripts": {
     "test": "node ./tests/run-all-tests.js",
     "test:basic": "node ./tests/basic.test.js",
@@ -28,7 +42,8 @@
     "lint:md": "npx markdownlint-cli2 \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
     "lint:md:fix": "npx markdownlint-cli2-fix \"**/*.md\" \"!coverage/**\" \"!node_modules/**\" --config .markdownlint.json",
     "format": "prettier --write .",
-    "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/run-all-tests.js"
+    "coverage": "c8 --reporter=lcov --reporter=text-summary --reports-dir=coverage node ./tests/run-all-tests.js",
+    "prepublishOnly": "npm run lint:ci && npm test"
   },
   "engines": {
     "node": ">=18.0.0"

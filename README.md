@@ -133,6 +133,8 @@ Key directories:
 
 ## Installation & Setup
 
+This package is ESM-only and requires Node.js 18+.
+
 Requirements:
 
 - Node.js >= 14
@@ -459,7 +461,7 @@ Run tests and coverage:
 
 ## License
 
-No license is declared in the repository. Before using this software in production, please consult the repository owner to confirm licensing terms and add a LICENSE file.
+MIT License. See the `LICENSE` file for details.
 
 ## Contact & Support
 
