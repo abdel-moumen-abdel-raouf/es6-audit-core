@@ -10,6 +10,7 @@ async function testAsyncLoggingAndBatch() {
   const ok = await logger.info('hello', { email: 'user@example.com', ip: '127.0.0.1' });
   assert.strictEqual(ok, true);
   await logger.flush();
+  logger.destroy();
 }
 
 function testSanitizerDefaults() {
@@ -38,6 +39,7 @@ export async function run() {
   await logger.info('a');
   await logger.info('b');
   await logger.flush();
+  logger.destroy();
 }
 
 if (import.meta.main) {

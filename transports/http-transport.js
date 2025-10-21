@@ -127,7 +127,18 @@ class AdvancedHttpTransport {
     this.options = options;
     this.errorHandler = new PermanentErrorHandler(options);
     this.circuitBreaker = options.circuitBreaker || null;
+    /**
+     * Reserved for a future persistent fallback store (e.g., file-backed queue)
+     * when remote delivery is unavailable. Currently unused but kept for
+     * backward-compatibility and to signal the extension point.
+     * @type {Array}
+     */
     this.fallbackQueue = [];
+    /**
+     * Reserved for tracking per-entry attempt counts if/when batching or
+     * de-duplication across retries is introduced. Currently unused.
+     * @type {Map<any, number>}
+     */
     this.attemptCounts = new Map();
     this.lastSuccessfulSend = null;
 
@@ -138,6 +149,10 @@ class AdvancedHttpTransport {
       maxBackoff: options.maxBackoff || 30000,
       jitter: options.jitter !== false,
       compressionEnabled: options.compressionEnabled !== false,
+      // Fallback configuration
+      fallbackEnabled: options.fallbackEnabled !== false,
+      fallbackStrategy: options.fallbackStrategy || 'memory', // 'memory' | 'file'
+      fallbackFilePath: options.fallbackFilePath || null, // used when strategy === 'file'
     };
   }
 
@@ -181,6 +196,10 @@ class AdvancedHttpTransport {
       if (!classification.retryable) {
         this.errorHandler.errorStats.failedPermanently++;
         this.errorHandler.addToDeadLetterQueue(entry, error, attemptNumber + 1);
+        // Enqueue to fallback for durability if enabled
+        if (this.config.fallbackEnabled) {
+          await this._enqueueFallback(entry, { reason: 'permanent-error', statusCode });
+        }
 
         if (this.circuitBreaker) {
           this.circuitBreaker.recordFailure();
@@ -204,6 +223,9 @@ class AdvancedHttpTransport {
       // Max retries exceeded
       this.errorHandler.errorStats.failedPermanently++;
       this.errorHandler.addToDeadLetterQueue(entry, error, attemptNumber + 1);
+      if (this.config.fallbackEnabled) {
+        await this._enqueueFallback(entry, { reason: 'retry-exhausted', statusCode });
+      }
 
       if (this.circuitBreaker) {
         this.circuitBreaker.recordFailure();
@@ -284,6 +306,7 @@ class AdvancedHttpTransport {
       deadLetterCount: this.errorHandler.deadLetterQueue.length,
       lastSuccessfulSend: this.lastSuccessfulSend,
       fallbackQueueSize: this.fallbackQueue.length,
+      fallbackStrategy: this.config.fallbackStrategy,
     };
   }
 
@@ -292,6 +315,48 @@ class AdvancedHttpTransport {
    */
   clearDeadLetterQueue() {
     this.errorHandler.deadLetterQueue = [];
+  }
+
+  /**
+   * Enqueue entry into fallback store (memory or file)
+   * @private
+   */
+  async _enqueueFallback(entry, meta = {}) {
+    try {
+      const payload = { timestamp: new Date().toISOString(), entry, meta };
+      if (this.config.fallbackStrategy === 'file' && this.config.fallbackFilePath) {
+        const fs = await import('node:fs/promises');
+        await fs.appendFile(this.config.fallbackFilePath, JSON.stringify(payload) + '\n', 'utf8');
+      } else {
+        this.fallbackQueue.push(payload);
+        // backpressure: trim to reasonable size
+        if (this.fallbackQueue.length > 5000) this.fallbackQueue.shift();
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to enqueue fallback entry:', e);
+    }
+  }
+
+  /**
+   * Attempt to flush the in-memory fallback queue
+   * Returns number of successfully re-sent entries
+   */
+  async flushFallbackQueue() {
+    let success = 0;
+    const remaining = [];
+    for (const item of this.fallbackQueue) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const res = await this.send(item.entry);
+        if (res && res.success) success += 1;
+        else remaining.push(item);
+      } catch {
+        remaining.push(item);
+      }
+    }
+    this.fallbackQueue = remaining;
+    return success;
   }
 }
 

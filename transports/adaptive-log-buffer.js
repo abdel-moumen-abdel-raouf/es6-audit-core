@@ -38,7 +38,14 @@ export class AdaptiveLogBuffer {
       timesFulled: 0,
       timesPaused: 0,
       timesResumed: 0,
+      lastFlushDurationMs: 0,
+      avgFlushDurationMs: 0,
     };
+
+    // Keep a bounded history of utilization metrics and flush durations for diagnostics
+    this._flushDurations = [];
+    this._utilizationHistory = [];
+    this._maxHistory = 50;
   }
 
   /**
@@ -128,13 +135,16 @@ export class AdaptiveLogBuffer {
    *
    */
   async _forceFlush(count) {
+    const started = Date.now();
     const entries = this.buffer.splice(0, count);
 
     for (const entry of entries) {
       this.memoryUsage -= this._estimateSize(entry);
     }
 
-    await this._notifyListeners(entries);
+  await this._notifyListeners(entries);
+  const elapsed = Date.now() - started;
+  this._recordFlushDuration(elapsed);
     this.stats.totalFlushed += entries.length;
 
     const utilizationPercent = this.buffer.length / this.maxSize;
@@ -165,13 +175,15 @@ export class AdaptiveLogBuffer {
   async flush() {
     return this.mutex.runExclusive(async () => {
       if (this.buffer.length === 0) return;
-
+      const started = Date.now();
       const entries = [...this.buffer];
 
       this.buffer = [];
       this.memoryUsage = 0;
 
       await this._notifyListeners(entries);
+      const elapsed = Date.now() - started;
+      this._recordFlushDuration(elapsed);
       this.stats.totalFlushed += entries.length;
 
       if (this.isPaused) {
@@ -281,6 +293,9 @@ export class AdaptiveLogBuffer {
       listenersCount: this.listeners.length,
 
       ...this.stats,
+      // Backward-compatibility: expose a correctly spelled alias without removing the legacy key
+      timesFilled: this.stats.timesFulled,
+      utilizationHistory: [...this._utilizationHistory],
     };
   }
 
@@ -319,6 +334,35 @@ export class AdaptiveLogBuffer {
       isPaused: this.isPaused,
       isFull: this.isFull(),
     };
+  }
+
+  /**
+   * Track flush duration and keep running average, storing small bounded history
+   * @private
+   */
+  _recordFlushDuration(ms) {
+    this.stats.lastFlushDurationMs = ms;
+    this._flushDurations.push(ms);
+    if (this._flushDurations.length > this._maxHistory) this._flushDurations.shift();
+    const sum = this._flushDurations.reduce((a, b) => a + b, 0);
+    this.stats.avgFlushDurationMs = Math.round(sum / this._flushDurations.length);
+    // Also sample utilization at flush time
+    this._sampleUtilization();
+  }
+
+  /**
+   * Sample buffer utilization for diagnostics; history is bounded
+   * @private
+   */
+  _sampleUtilization() {
+    const utilizationByCount = this.maxSize > 0 ? this.buffer.length / this.maxSize : 0;
+    const utilizationByMemory = this.maxMemory > 0 ? this.memoryUsage / this.maxMemory : 0;
+    this._utilizationHistory.push({
+      t: Date.now(),
+      byCount: Number(utilizationByCount.toFixed(3)),
+      byMemory: Number(utilizationByMemory.toFixed(3)),
+    });
+    if (this._utilizationHistory.length > this._maxHistory) this._utilizationHistory.shift();
   }
 
   /**

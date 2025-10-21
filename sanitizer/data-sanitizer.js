@@ -292,11 +292,13 @@ export class DataSanitizer {
    */
   _sanitizeString(str, trackStats = true) {
     let result = str;
-    const originalLength = result.length;
     let modified = false;
 
     for (const [name, config] of Object.entries(this.config.patterns)) {
       const pattern = config.pattern || config;
+      const enabled = config.enabled !== false; // default to enabled when undefined
+
+      if (!enabled) continue;
 
       if (name === 'email' && !this.config.maskEmails) continue;
       if (name === 'ipAddress' && !this.config.maskIPs) continue;
@@ -440,7 +442,7 @@ export class DataSanitizer {
     return Object.entries(this.config.patterns).map(([name, config]) => ({
       name,
       description: config.description || name,
-      enabled: true,
+      enabled: config.enabled !== false,
     }));
   }
 
