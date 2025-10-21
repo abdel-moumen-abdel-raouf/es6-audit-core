@@ -115,12 +115,56 @@ async function testAdvancedHttpTransportErrors() {
   assert.strictEqual(dlq2.length >= 1, true);
 }
 
+async function testAdvancedHttpTransportFallbackAndFlush() {
+  const t = new AdvancedHttpTransport('https://example.com/api', {
+    shouldFail: true,
+    failureStatusCode: 503,
+    maxRetries: 0,
+    fallbackEnabled: true,
+    fallbackStrategy: 'memory',
+  });
+  const res = await t.send({ msg: 'persist-me' });
+  assert.strictEqual(res.success, false);
+  const stats1 = t.getStats();
+  assert.strictEqual(stats1.fallbackQueueSize >= 1, true, 'fallback queue should get entries');
+
+  // Simulate recovery and flush the fallback queue
+  t.options.shouldFail = false;
+  const flushed = await t.flushFallbackQueue();
+  const stats2 = t.getStats();
+  assert.strictEqual(flushed >= 1, true, 'should re-send some entries');
+  assert.strictEqual(stats2.fallbackQueueSize, 0, 'fallback queue should be empty after flush');
+}
+
+async function testCoreLoggerInvalidTransportGuard() {
+  const invalid = {}; // missing write/log
+  const logger = new CoreLogger({ name: 'guard', transports: [invalid], buffer: { maxSize: 1 } });
+  assert.strictEqual(logger.transports.length, 0, 'invalid transports should be ignored');
+  logger.addTransport({});
+  assert.strictEqual(logger.transports.length, 0, 'invalid addTransport should be a no-op');
+  logger.destroy();
+}
+
+async function testAdaptiveLogBufferDiagnostics() {
+  const buffer = new AdaptiveLogBuffer({ maxSize: 2, flushInterval: 10 });
+  buffer.onFlush(async () => {});
+  await buffer.push({ v: 1 });
+  await buffer.flush();
+  const stats = buffer.getStatistics();
+  assert.ok(typeof stats.lastFlushDurationMs === 'number');
+  assert.ok(typeof stats.avgFlushDurationMs === 'number');
+  assert.ok(Array.isArray(stats.utilizationHistory));
+}
+
 export async function run() {
   await testRateLimiterBasics();
   await testAdaptiveLogBufferFlow();
   await testCoreLoggerFlushAndRateLimit();
   testDataSanitizer();
   await testAdvancedHttpTransportErrors();
+  await testAdvancedHttpTransportFallbackAndFlush();
+  await testCoreLoggerInvalidTransportGuard();
+  await testAdaptiveLogBufferDiagnostics();
 }
 
 if (import.meta.main) {

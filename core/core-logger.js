@@ -124,8 +124,12 @@ export class CoreLogger {
     // Initialize rate limiter to control logging rate and prevent spam
     this.rateLimiter = new RateLimiter(config.rateLimiter);
 
-    // Transport layer for outputting logs
-    this.transports = config.transports ?? [];
+    // Transport layer for outputting logs (validate shapes)
+    this.transports = (config.transports ?? []).filter((t) => this._isValidTransport(t));
+    if (config.transports && this.transports.length !== config.transports.length) {
+      // eslint-disable-next-line no-console
+      console.warn(`[${this.name}] Some transports were ignored due to invalid shape (expected write(entries) or log(entry))`);
+    }
 
     // Core statistics for monitoring
     this.stats = {
@@ -440,6 +444,11 @@ export class CoreLogger {
     if (!transport) {
       throw new LoggingError('Transport must be provided');
     }
+    if (!this._isValidTransport(transport)) {
+      // eslint-disable-next-line no-console
+      console.warn(`[${this.name}] Ignoring invalid transport (expected write(entries) or log(entry))`);
+      return this;
+    }
     this.transports.push(transport);
     return this;
   }
@@ -462,6 +471,17 @@ export class CoreLogger {
       this.transports.splice(index, 1);
     }
     return this;
+  }
+
+  /**
+   * Validate transport shape: must expose write(entries) or log(entry)
+   * @private
+   */
+  _isValidTransport(transport) {
+    return (
+      transport &&
+      (typeof transport.write === 'function' || typeof transport.log === 'function')
+    );
   }
 
   // ═════════════════════════════════════════════════════════════════
