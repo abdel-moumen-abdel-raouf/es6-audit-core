@@ -1,0 +1,122 @@
+[
+  {
+    "name": "CoreLogger",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./core/core-logger.js"
+  },
+  {
+    "name": "Logger",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./core/core-logger.js"
+  },
+  {
+    "name": "CoreLoggerConfig",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./core/core-logger-config.js"
+  },
+  {
+    "name": "LoggerConfig",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./config/logger-config.js"
+  },
+  {
+    "name": "ModuleConfig",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./config/module-config.js"
+  },
+  {
+    "name": "DynamicConfig",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./config/dynamic-config.js"
+  },
+  {
+    "name": "LogContext",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./context/log-context.js"
+  },
+  {
+    "name": "RequestContext",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./context/request-context.js"
+  },
+  {
+    "name": "ConsoleTransport",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./transports/console-transport.js"
+  },
+  {
+    "name": "FileTransport",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./transports/file-transport.js"
+  },
+  {
+    "name": "HttpTransport",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./transports/http-transport.js"
+  },
+  {
+    "name": "LogBuffer",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./transports/log-buffer.js"
+  },
+  {
+    "name": "AdaptiveLogBuffer",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./transports/adaptive-log-buffer.js"
+  },
+  {
+    "name": "RateLimiter",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./rate-limiting/rate-limiter.js"
+  },
+  {
+    "name": "LoggingError",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./error-handling/errors.js"
+  },
+  {
+    "name": "DataSanitizer",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./sanitizer/data-sanitizer.js"
+  },
+  {
+    "name": "EncodingDetector",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./sanitizer/encoding-detector.js"
+  },
+  {
+    "name": "Mutex",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./sync/mutex.js"
+  },
+  {
+    "name": "LogLevel",
+    "kind": "const",
+    "stability": "stable",
+    "sourcePath": "./utils/types.js"
+  },
+  {
+    "name": "LogEntry",
+    "kind": "class",
+    "stability": "stable",
+    "sourcePath": "./utils/log-entry.js"
+  }
+]
