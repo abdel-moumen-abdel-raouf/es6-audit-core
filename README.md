@@ -482,26 +482,25 @@ Notes:
 
 The following table freezes the stable public API surface at version 1.0. Any additions must be explicitly approved and reflected in `api-manifest.json`.
 
-| Name | Kind | Stability | Source Path |
-| --- | --- | --- | --- |
-| CoreLogger | class | stable | ./core/core-logger.js |
-| Logger | class | stable | ./core/core-logger.js |
-| CoreLoggerConfig | class | stable | ./core/core-logger-config.js |
-| LoggerConfig | class | stable | ./config/logger-config.js |
-| ModuleConfig | class | stable | ./config/module-config.js |
-| DynamicConfig | class | stable | ./config/dynamic-config.js |
-| LogContext | class | stable | ./context/log-context.js |
-| RequestContext | class | stable | ./context/request-context.js |
-| ConsoleTransport | class | stable | ./transports/console-transport.js |
-| FileTransport | class | stable | ./transports/file-transport.js |
-| HttpTransport | class | stable | ./transports/http-transport.js |
-| LogBuffer | class | stable | ./transports/log-buffer.js |
-| AdaptiveLogBuffer | class | stable | ./transports/adaptive-log-buffer.js |
-| RateLimiter | class | stable | ./rate-limiting/rate-limiter.js |
-| LoggingError | class | stable | ./error-handling/errors.js |
-| DataSanitizer | class | stable | ./sanitizer/data-sanitizer.js |
-| EncodingDetector | class | stable | ./sanitizer/encoding-detector.js |
-| Mutex | class | stable | ./sync/mutex.js |
-| LogLevel | const | stable | ./utils/types.js |
-| LogEntry | class | stable | ./utils/log-entry.js |
-
+| Name              | Kind  | Stability | Source Path                         |
+| ----------------- | ----- | --------- | ----------------------------------- |
+| CoreLogger        | class | stable    | ./core/core-logger.js               |
+| Logger            | class | stable    | ./core/core-logger.js               |
+| CoreLoggerConfig  | class | stable    | ./core/core-logger-config.js        |
+| LoggerConfig      | class | stable    | ./config/logger-config.js           |
+| ModuleConfig      | class | stable    | ./config/module-config.js           |
+| DynamicConfig     | class | stable    | ./config/dynamic-config.js          |
+| LogContext        | class | stable    | ./context/log-context.js            |
+| RequestContext    | class | stable    | ./context/request-context.js        |
+| ConsoleTransport  | class | stable    | ./transports/console-transport.js   |
+| FileTransport     | class | stable    | ./transports/file-transport.js      |
+| HttpTransport     | class | stable    | ./transports/http-transport.js      |
+| LogBuffer         | class | stable    | ./transports/log-buffer.js          |
+| AdaptiveLogBuffer | class | stable    | ./transports/adaptive-log-buffer.js |
+| RateLimiter       | class | stable    | ./rate-limiting/rate-limiter.js     |
+| LoggingError      | class | stable    | ./error-handling/errors.js          |
+| DataSanitizer     | class | stable    | ./sanitizer/data-sanitizer.js       |
+| EncodingDetector  | class | stable    | ./sanitizer/encoding-detector.js    |
+| Mutex             | class | stable    | ./sync/mutex.js                     |
+| LogLevel          | const | stable    | ./utils/types.js                    |
+| LogEntry          | class | stable    | ./utils/log-entry.js                |

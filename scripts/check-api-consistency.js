@@ -36,8 +36,12 @@ async function main() {
     fs.readFile(indexPath, 'utf8'),
     fs.readFile(manifestPath, 'utf8'),
   ]);
-  const current = parseExports(src).map((e) => e.name).sort();
-  const manifest = JSON.parse(manifestRaw).map((e) => e.name).sort();
+  const current = parseExports(src)
+    .map((e) => e.name)
+    .sort();
+  const manifest = JSON.parse(manifestRaw)
+    .map((e) => e.name)
+    .sort();
 
   const setCurrent = new Set(current);
   const setManifest = new Set(manifest);
@@ -49,7 +53,9 @@ async function main() {
     console.error('API manifest mismatch:');
     if (added.length) console.error('  Added exports not in manifest:', added.join(', '));
     if (removed.length) console.error('  Removed exports present in manifest:', removed.join(', '));
-    console.error('If intentional, update api-manifest.json via scripts/generate-api-manifest.js and commit the change.');
+    console.error(
+      'If intentional, update api-manifest.json via scripts/generate-api-manifest.js and commit the change.'
+    );
     process.exit(1);
   }
   console.log('API is consistent with manifest.');

@@ -142,9 +142,9 @@ export class AdaptiveLogBuffer {
       this.memoryUsage -= this._estimateSize(entry);
     }
 
-  await this._notifyListeners(entries);
-  const elapsed = Date.now() - started;
-  this._recordFlushDuration(elapsed);
+    await this._notifyListeners(entries);
+    const elapsed = Date.now() - started;
+    this._recordFlushDuration(elapsed);
     this.stats.totalFlushed += entries.length;
 
     const utilizationPercent = this.buffer.length / this.maxSize;

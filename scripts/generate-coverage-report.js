@@ -41,7 +41,10 @@ async function parseLCOV(file) {
     } else if (line.startsWith('FNH:')) {
       current && (current.functionsHit = parseInt(line.slice(4), 10) || 0);
     } else if (line === 'end_of_record') {
-      if (current) { files.push(current); current = null; }
+      if (current) {
+        files.push(current);
+        current = null;
+      }
     }
   }
   if (current) files.push(current);
@@ -63,11 +66,16 @@ function rowFor(f) {
   const flag = below ? '❌' : '✅';
   return {
     line: `| ${flag} | ${f.file} | ${stmtsP.toFixed(2)}% | ${branchesP.toFixed(2)}% | ${funcsP.toFixed(2)}% | ${linesP.toFixed(2)}% |`,
-    linesP, funcsP, branchesP, stmtsP,
+    linesP,
+    funcsP,
+    branchesP,
+    stmtsP,
   };
 }
 
-function sum(a, b) { return a + b; }
+function sum(a, b) {
+  return a + b;
+}
 
 async function main() {
   const files = await parseLCOV(lcovPath);
@@ -75,14 +83,24 @@ async function main() {
   const projFiles = files.filter((f) => !/node_modules|\bcoverage\b/.test(f.file));
   const rows = projFiles.map(rowFor);
 
-  const totals = projFiles.reduce((acc, f) => ({
-    linesFound: acc.linesFound + f.linesFound,
-    linesHit: acc.linesHit + f.linesHit,
-    branchesFound: acc.branchesFound + f.branchesFound,
-    branchesHit: acc.branchesHit + f.branchesHit,
-    functionsFound: acc.functionsFound + f.functionsFound,
-    functionsHit: acc.functionsHit + f.functionsHit,
-  }), { linesFound: 0, linesHit: 0, branchesFound: 0, branchesHit: 0, functionsFound: 0, functionsHit: 0 });
+  const totals = projFiles.reduce(
+    (acc, f) => ({
+      linesFound: acc.linesFound + f.linesFound,
+      linesHit: acc.linesHit + f.linesHit,
+      branchesFound: acc.branchesFound + f.branchesFound,
+      branchesHit: acc.branchesHit + f.branchesHit,
+      functionsFound: acc.functionsFound + f.functionsFound,
+      functionsHit: acc.functionsHit + f.functionsHit,
+    }),
+    {
+      linesFound: 0,
+      linesHit: 0,
+      branchesFound: 0,
+      branchesHit: 0,
+      functionsFound: 0,
+      functionsHit: 0,
+    }
+  );
 
   const overall = {
     stmts: pct(totals.linesHit, totals.linesFound), // approximation
@@ -93,12 +111,17 @@ async function main() {
 
   // Recommend top 5 critical modules (prefer core logging and buffering)
   const priorityDirs = ['core/', 'transports/', 'sanitizer/', 'rate-limiting/'];
-  const scored = projFiles.map((f) => {
-    const baseScore = 100 - pct(f.linesHit, f.linesFound);
-    const weight = priorityDirs.some((d) => f.file.startsWith(d)) ? 1.5 : 1.0;
-    return { file: f.file, score: baseScore * weight, linesFound: f.linesFound };
-  }).sort((a, b) => b.score - a.score);
-  const top5 = scored.filter((s) => s.linesFound > 0).slice(0, 5).map((s) => s.file);
+  const scored = projFiles
+    .map((f) => {
+      const baseScore = 100 - pct(f.linesHit, f.linesFound);
+      const weight = priorityDirs.some((d) => f.file.startsWith(d)) ? 1.5 : 1.0;
+      return { file: f.file, score: baseScore * weight, linesFound: f.linesFound };
+    })
+    .sort((a, b) => b.score - a.score);
+  const top5 = scored
+    .filter((s) => s.linesFound > 0)
+    .slice(0, 5)
+    .map((s) => s.file);
 
   const header = `# Coverage Report\n\nGenerated from coverage/lcov.info. Files below 50% in any category are marked with ❌. Statements are approximated by line coverage due to LCOV limitations.\n`;
   const summary = `\n## Overall Summary\n\n- Statements: ${overall.stmts.toFixed(2)}%\n- Branches: ${overall.branches.toFixed(2)}%\n- Functions: ${overall.funcs.toFixed(2)}%\n- Lines: ${overall.lines.toFixed(2)}%\n`;

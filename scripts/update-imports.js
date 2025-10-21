@@ -56,7 +56,10 @@ async function walk(dir) {
         // Replace relative ESM imports that end with old path
         const reFrom = new RegExp(`(from\\s+['"])((?:\\./|\.\./).*?)${oldPathEsc}(['"])`, 'g');
         // Replace relative CommonJS requires
-        const reRequire = new RegExp(`(require\\(\\s*['"])((?:\\./|\.\./).*?)${oldPathEsc}(['"])`, 'g');
+        const reRequire = new RegExp(
+          `(require\\(\\s*['"])((?:\\./|\.\./).*?)${oldPathEsc}(['"])`,
+          'g'
+        );
         let next = content.replace(reFrom, `$1${rel}$3`).replace(reRequire, `$1${rel}$3`);
         // Also fix accidental bare 'internal/...' specifiers produced earlier
         const bareOld = escapeRe('internal/' + oldPosix.split('/').slice(1).join('/'));
