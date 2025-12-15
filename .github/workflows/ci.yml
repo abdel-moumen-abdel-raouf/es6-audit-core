@@ -30,13 +30,13 @@ jobs:
         run: npm run coverage --if-present
       - name: Upload lcov report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: lcov-node-${{ matrix.node }}
           path: coverage
       - name: Upload coverage artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-node-${{ matrix.node }}
           path: coverage
@@ -47,7 +47,7 @@ jobs:
           npx --yes markdownlint-cli2 "**/*.md" "!coverage/**" "!node_modules/**" --config .markdownlint.json | tee md-lint.txt || true
       - name: Upload markdownlint report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: markdownlint-node-${{ matrix.node }}
           path: md-lint.txt
